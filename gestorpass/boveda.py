@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import csv
 import os
+import secrets
 import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
@@ -121,7 +122,9 @@ class Boveda:
             raise
 
     def verificar_maestra(self, contrasena: str) -> bool:
-        return contrasena == self._contrasena
+        if self._contrasena is None:
+            return False
+        return secrets.compare_digest(contrasena.encode("utf-8"), self._contrasena.encode("utf-8"))
 
     # ---------------------------------------------------------------------- CRUD
     def obtener(self, id_entrada: str) -> Entrada | None:
@@ -204,10 +207,10 @@ class Boveda:
             entrada = Entrada(
                 sitio=_texto(fila.get("sitio")),
                 usuario=_texto(fila.get("usuario")),
-                contrasena=_texto(fila.get("contrasena")),
+                contrasena=str(fila.get("contrasena") or ""),
                 url=_texto(fila.get("url")),
                 categoria=_texto(fila.get("categoria")),
-                notas=_texto(fila.get("notas")),
+                notas=str(fila.get("notas") or ""),
             )
             if not entrada.sitio and not entrada.usuario:
                 omitidas += 1
@@ -274,6 +277,7 @@ class Boveda:
             fh.seek(0)
             try:
                 dialecto = csv.Sniffer().sniff(muestra, delimiters=",;\t")
+                dialecto.quotechar = '"'
             except csv.Error:
                 dialecto = csv.excel
             lector = csv.reader(fh, dialecto)
@@ -307,8 +311,13 @@ class Boveda:
             celda.alignment = Alignment(horizontal="center")
 
         for e in sorted(self.entradas, key=lambda x: x.sitio.lower()):
-            hoja.append([e.sitio, e.usuario, e.contrasena, e.url, e.categoria,
-                         e.notas, e.creado, e.modificado])
+            hoja.append([_sanitizar_formula(e.sitio),
+                         _sanitizar_formula(e.usuario),
+                         _sanitizar_formula(e.contrasena),
+                         _sanitizar_formula(e.url),
+                         _sanitizar_formula(e.categoria),
+                         _sanitizar_formula(e.notas),
+                         e.creado, e.modificado])
 
         for columna, ancho in zip("ABCDEFGH", (28, 32, 26, 30, 18, 40, 20, 20)):
             hoja.column_dimensions[columna].width = ancho
@@ -322,8 +331,13 @@ class Boveda:
             escritor = csv.writer(fh)
             escritor.writerow(CAMPOS_EXPORT)
             for e in sorted(self.entradas, key=lambda x: x.sitio.lower()):
-                escritor.writerow([e.sitio, e.usuario, e.contrasena, e.url,
-                                   e.categoria, e.notas, e.creado, e.modificado])
+                escritor.writerow([_sanitizar_formula(e.sitio),
+                                   _sanitizar_formula(e.usuario),
+                                   _sanitizar_formula(e.contrasena),
+                                   _sanitizar_formula(e.url),
+                                   _sanitizar_formula(e.categoria),
+                                   _sanitizar_formula(e.notas),
+                                   e.creado, e.modificado])
         return len(self.entradas)
 
 
@@ -362,11 +376,31 @@ def _mapear_columnas(encabezado: list[str]) -> dict[str, int]:
     return indices if ("sitio" in indices or "usuario" in indices) else {}
 
 
+def _sanitizar_formula(valor: str) -> str:
+    """Previene Formula Injection / CSV Injection (CWE-1236) en hojas de cálculo.
+    Si una celda inicia con =, +, -, @, \\t o \\r, se neutraliza con un apóstrofo (')
+    para que Excel o Calc lo traten como texto literal seguro."""
+    if not valor:
+        return ""
+    val_str = str(valor)
+    if val_str and val_str[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + val_str
+    return val_str
+
+
+def _desanitizar_formula(valor: str) -> str:
+    """Restaura el valor original si fue protegido previamente con apóstrofo."""
+    if valor and valor.startswith("'") and len(valor) > 1 and valor[1] in ("=", "+", "-", "@", "\t", "\r"):
+        return valor[1:]
+    return valor
+
+
 def _fila_a_dict(fila, indices: dict[str, int]) -> dict:
     resultado = {}
     for campo, posicion in indices.items():
         try:
-            resultado[campo] = fila[posicion]
+            val = fila[posicion]
+            resultado[campo] = _desanitizar_formula(_texto(val))
         except (IndexError, TypeError):
             resultado[campo] = ""
     return resultado

@@ -99,6 +99,11 @@ pytest -v
 
 Automated tests run on Windows and Ubuntu on every commit via GitHub Actions.
 
+## Documentation & Changelog
+
+- Technical Architecture & Threat Model: [ARCHITECTURE.md](ARCHITECTURE.md)
+- Release History & Versioning: [CHANGELOG.md](CHANGELOG.md)
+
 ---
 
 ## License

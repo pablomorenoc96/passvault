@@ -99,6 +99,11 @@ pytest -v
 
 Las pruebas se ejecutan automáticamente en Windows y Ubuntu en cada commit mediante GitHub Actions.
 
+## Documentación y Registro de Cambios
+
+- Arquitectura Técnica y Modelo de Amenazas: [ARCHITECTURE.md](ARCHITECTURE.md)
+- Historial de Versiones: [CHANGELOG.md](CHANGELOG.md)
+
 ---
 
 ## Licencia
