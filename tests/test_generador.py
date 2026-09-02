@@ -61,3 +61,20 @@ def test_tamano_alfabeto_y_entropia():
 
     entropia = generador.entropia_generada(longitud=20, alfabeto=alfabeto)
     assert entropia > 100.0  # 20 caracteres sobre un alfabeto de ~94 símbolos da >130 bits
+
+
+def test_generar_desde_palabra():
+    palabra = "guitarra"
+    # Con sufijo y leet
+    pwd = generador.generar_desde_palabra(palabra, leet=True, capitalizar=True, con_sufijo=True)
+    assert len(pwd) > len(palabra)
+    assert any(c in NUMEROS for c in pwd)
+
+    # Sin sufijo ni leet ni capitalizar
+    pwd_simple = generador.generar_desde_palabra(palabra, leet=False, capitalizar=False, con_sufijo=False)
+    assert pwd_simple == palabra
+
+
+def test_generar_desde_palabra_vacia():
+    with pytest.raises(ErrorGenerador):
+        generador.generar_desde_palabra("   ")

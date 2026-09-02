@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Architectural Documentation:** Added `ARCHITECTURE.md` documenting the threat model, cryptographic specifications (Argon2id, AES-256-GCM, AAD), binary file structure, and atomic write durability.
 - **Automated CI/CD Workflows:** Configured GitHub Actions matrix testing across Windows and Linux on Python 3.10 through 3.13, and automated binary compilation on tag release.
 - **Pixel-Perfect Banner & Visuals:** Uniform 32px pill badges, regular typography, and exact coordinate alignment for project branding.
+- **Word-Based Mnemonic Generator:** Added support for generating memorable yet cryptographically secure passwords from a base word or phrase with probabilistic leet mutations, case variation, and CSPRNG suffix tokens.
 
 ### Changed
 - Refactored project name and binary artifact to **PassVault**.

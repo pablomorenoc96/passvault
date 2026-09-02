@@ -85,7 +85,14 @@ TEXTS: dict[str, dict[str, str]] = {
 
         # Generador (ui_generador)
         "gen_title": "Generador de contraseñas",
-        "gen_subtitle": "Aleatorias con el generador criptográfico del sistema (secrets).",
+        "gen_subtitle": "Criptográficamente seguras con el módulo secrets de Python.",
+        "gen_tab_random": "Aleatoria",
+        "gen_tab_word": "Desde palabra base",
+        "gen_base_word_label": "PALABRA BASE O FRASE",
+        "gen_base_word_placeholder": "Ej. guitarra, castillo, cafe...",
+        "gen_opt_leet": "Sustituciones leet (@, 3, 1, 0, $)",
+        "gen_opt_case": "Variar mayúsculas y minúsculas",
+        "gen_opt_suffix": "Añadir sufijo seguro (números y símbolos)",
         "gen_length": "Longitud:",
         "gen_uppercase": "Mayúsculas (A-Z)",
         "gen_lowercase": "Minúsculas (a-z)",
@@ -234,7 +241,14 @@ TEXTS: dict[str, dict[str, str]] = {
 
         # Generator
         "gen_title": "Password Generator",
-        "gen_subtitle": "Randomized using system CSPRNG (secrets).",
+        "gen_subtitle": "Cryptographically secure via Python's secrets CSPRNG.",
+        "gen_tab_random": "Random",
+        "gen_tab_word": "From base word",
+        "gen_base_word_label": "BASE WORD OR PHRASE",
+        "gen_base_word_placeholder": "E.g. guitar, castle, coffee...",
+        "gen_opt_leet": "Leet substitutions (@, 3, 1, 0, $)",
+        "gen_opt_case": "Vary uppercase & lowercase",
+        "gen_opt_suffix": "Add secure suffix (numbers & symbols)",
         "gen_length": "Length:",
         "gen_uppercase": "Uppercase (A-Z)",
         "gen_lowercase": "Lowercase (a-z)",

@@ -18,12 +18,18 @@ class DialogoGenerador(DialogoBase):
     def __init__(self, padre, colores: dict, prefs: dict, al_copiar=None,
                  modo_seleccion: bool = False):
         super().__init__(padre, colores, i18n.t("gen_title"), 520,
-                         560 if modo_seleccion else 520)
+                         600 if modo_seleccion else 560)
         self.prefs = prefs
         self.al_copiar = al_copiar
         self.modo_seleccion = modo_seleccion
 
         self.var_pass = tk.StringVar()
+        self.var_modo = tk.StringVar(value=prefs.get("gen_modo", "aleatorio"))
+        self.var_palabra = tk.StringVar(value=prefs.get("gen_palabra", "PassVault"))
+        self.var_leet = tk.BooleanVar(value=bool(prefs.get("gen_leet", True)))
+        self.var_case = tk.BooleanVar(value=bool(prefs.get("gen_case", True)))
+        self.var_sufijo = tk.BooleanVar(value=bool(prefs.get("gen_sufijo", True)))
+
         self.var_longitud = tk.IntVar(value=int(prefs.get("gen_longitud", 20)))
         self.var_may = tk.BooleanVar(value=bool(prefs.get("gen_mayusculas", True)))
         self.var_min = tk.BooleanVar(value=bool(prefs.get("gen_minusculas", True)))
@@ -32,7 +38,7 @@ class DialogoGenerador(DialogoBase):
         self.var_amb = tk.BooleanVar(value=bool(prefs.get("gen_sin_ambiguos", False)))
 
         self._construir()
-        self.regenerar()
+        self._cambio_modo()
 
     # ------------------------------------------------------------------ interfaz
     def _construir(self) -> None:
@@ -76,26 +82,37 @@ class DialogoGenerador(DialogoBase):
         self.lbl_tiempo = ttk.Label(caja, text="", style="PanelTenue.TLabel")
         self.lbl_tiempo.pack(anchor="w", pady=(2, 0))
 
-        # --- longitud -------------------------------------------------------
-        opciones = ttk.Frame(raiz, style="Panel.TFrame", padding=14)
-        opciones.pack(fill="x", pady=(12, 0))
+        # --- selector de modo -----------------------------------------------
+        selector = ttk.Frame(raiz)
+        selector.pack(fill="x", pady=(10, 4))
 
-        cabecera = ttk.Frame(opciones, style="Panel.TFrame")
+        ttk.Radiobutton(selector, text=i18n.t("gen_tab_random"),
+                        value="aleatorio", variable=self.var_modo,
+                        command=self._cambio_modo).pack(side="left", padx=(0, 16))
+        ttk.Radiobutton(selector, text=i18n.t("gen_tab_word"),
+                        value="palabra", variable=self.var_modo,
+                        command=self._cambio_modo).pack(side="left")
+
+        # --- opciones modo aleatorio ----------------------------------------
+        self.frame_aleatorio = ttk.Frame(raiz, style="Panel.TFrame", padding=14)
+
+        cabecera = ttk.Frame(self.frame_aleatorio, style="Panel.TFrame")
         cabecera.pack(fill="x")
-        ttk.Label(cabecera, text="LONGITUD", style="Seccion.TLabel").pack(side="left")
+        ttk.Label(cabecera, text="LONGITUD" if i18n.get_idioma() == "es" else "LENGTH",
+                  style="Seccion.TLabel").pack(side="left")
         self.lbl_longitud = ttk.Label(cabecera, text="20", style="Panel.TLabel",
                                       font=("Consolas", 12, "bold"))
         self.lbl_longitud.pack(side="right")
 
-        self.escala = ttk.Scale(opciones, from_=generador.LONGITUD_MINIMA,
+        self.escala = ttk.Scale(self.frame_aleatorio, from_=generador.LONGITUD_MINIMA,
                                 to=generador.LONGITUD_MAXIMA, orient="horizontal",
                                 command=self._cambio_longitud)
         self.escala.set(self.var_longitud.get())
         self.escala.pack(fill="x", pady=(6, 12))
 
-        # --- tipos de caracter ----------------------------------------------
-        ttk.Label(opciones, text="INCLUIR" if i18n.get_idioma() == "es" else "INCLUDE", style="Seccion.TLabel").pack(anchor="w")
-        rejilla = ttk.Frame(opciones, style="Panel.TFrame")
+        ttk.Label(self.frame_aleatorio, text="INCLUIR" if i18n.get_idioma() == "es" else "INCLUDE",
+                  style="Seccion.TLabel").pack(anchor="w")
+        rejilla = ttk.Frame(self.frame_aleatorio, style="Panel.TFrame")
         rejilla.pack(fill="x", pady=(6, 0))
         rejilla.columnconfigure(0, weight=1)
         rejilla.columnconfigure(1, weight=1)
@@ -111,9 +128,31 @@ class DialogoGenerador(DialogoBase):
                             command=self.regenerar).grid(row=fila_i, column=col,
                                                          sticky="w", pady=3)
 
-        ttk.Checkbutton(opciones, text=i18n.t("gen_no_ambiguous"),
+        ttk.Checkbutton(self.frame_aleatorio, text=i18n.t("gen_no_ambiguous"),
                         variable=self.var_amb,
                         command=self.regenerar).pack(anchor="w", pady=(8, 0))
+
+        # --- opciones modo palabra base -------------------------------------
+        self.frame_palabra = ttk.Frame(raiz, style="Panel.TFrame", padding=14)
+
+        ttk.Label(self.frame_palabra, text=i18n.t("gen_base_word_label"),
+                  style="Seccion.TLabel").pack(anchor="w")
+
+        ent_palabra = tk.Entry(self.frame_palabra, textvariable=self.var_palabra,
+                               font=("Segoe UI", 11), bg=c["panel"], fg=c["texto"],
+                               insertbackground=c["texto"], relief="solid", bd=1)
+        ent_palabra.pack(fill="x", pady=(6, 10), ipady=3)
+        ent_palabra.bind("<KeyRelease>", lambda _e: self.regenerar())
+
+        ttk.Checkbutton(self.frame_palabra, text=i18n.t("gen_opt_leet"),
+                        variable=self.var_leet,
+                        command=self.regenerar).pack(anchor="w", pady=2)
+        ttk.Checkbutton(self.frame_palabra, text=i18n.t("gen_opt_case"),
+                        variable=self.var_case,
+                        command=self.regenerar).pack(anchor="w", pady=2)
+        ttk.Checkbutton(self.frame_palabra, text=i18n.t("gen_opt_suffix"),
+                        variable=self.var_sufijo,
+                        command=self.regenerar).pack(anchor="w", pady=2)
 
         self.lbl_error = ttk.Label(raiz, text="", style="Tenue.TLabel",
                                    foreground=c["peligro"])
@@ -138,6 +177,16 @@ class DialogoGenerador(DialogoBase):
         self.bind("<Return>", lambda _e: self.usar() if self.modo_seleccion else self.copiar())
 
     # -------------------------------------------------------------------- lógica
+    def _cambio_modo(self) -> None:
+        modo = self.var_modo.get()
+        if modo == "palabra":
+            self.frame_aleatorio.pack_forget()
+            self.frame_palabra.pack(fill="x", pady=(6, 0))
+        else:
+            self.frame_palabra.pack_forget()
+            self.frame_aleatorio.pack(fill="x", pady=(6, 0))
+        self.regenerar()
+
     def _cambio_longitud(self, valor) -> None:
         longitud = int(float(valor))
         if longitud != self.var_longitud.get():
@@ -148,26 +197,52 @@ class DialogoGenerador(DialogoBase):
             self.lbl_longitud.configure(text=str(longitud))
 
     def regenerar(self, _evento=None) -> None:
-        longitud = self.var_longitud.get()
-        try:
-            contrasena = generador.generar(
-                longitud=longitud,
-                mayusculas=self.var_may.get(), minusculas=self.var_min.get(),
-                numeros=self.var_num.get(), simbolos=self.var_sim.get(),
-                sin_ambiguos=self.var_amb.get(),
-            )
-        except generador.ErrorGenerador as exc:
-            self.lbl_error.configure(text=str(exc))
-            self.var_pass.set("")
-            self.barra.limpiar()
-            self.lbl_nivel.configure(text="")
-            self.lbl_tiempo.configure(text="")
-            return
+        modo = self.var_modo.get()
+        if modo == "palabra":
+            palabra = self.var_palabra.get().strip()
+            if not palabra:
+                self.lbl_error.configure(text=i18n.t("gen_base_word_placeholder"))
+                self.var_pass.set("")
+                self.barra.limpiar()
+                self.lbl_nivel.configure(text="")
+                self.lbl_tiempo.configure(text="")
+                return
+            try:
+                contrasena = generador.generar_desde_palabra(
+                    palabra=palabra,
+                    leet=self.var_leet.get(),
+                    capitalizar=self.var_case.get(),
+                    con_sufijo=self.var_sufijo.get(),
+                )
+            except generador.ErrorGenerador as exc:
+                self.lbl_error.configure(text=str(exc))
+                return
 
-        self.lbl_error.configure(text="")
-        self.var_pass.set(contrasena)
-        self._actualizar_medidor(len(contrasena))
-        self._guardar_prefs()
+            self.lbl_error.configure(text="")
+            self.var_pass.set(contrasena)
+            self._actualizar_medidor_palabra(contrasena)
+            self._guardar_prefs()
+        else:
+            longitud = self.var_longitud.get()
+            try:
+                contrasena = generador.generar(
+                    longitud=longitud,
+                    mayusculas=self.var_may.get(), minusculas=self.var_min.get(),
+                    numeros=self.var_num.get(), simbolos=self.var_sim.get(),
+                    sin_ambiguos=self.var_amb.get(),
+                )
+            except generador.ErrorGenerador as exc:
+                self.lbl_error.configure(text=str(exc))
+                self.var_pass.set("")
+                self.barra.limpiar()
+                self.lbl_nivel.configure(text="")
+                self.lbl_tiempo.configure(text="")
+                return
+
+            self.lbl_error.configure(text="")
+            self.var_pass.set(contrasena)
+            self._actualizar_medidor(len(contrasena))
+            self._guardar_prefs()
 
     def _actualizar_medidor(self, longitud: int) -> None:
         alfabeto = generador.tamano_alfabeto(
@@ -184,8 +259,25 @@ class DialogoGenerador(DialogoBase):
             text=f"Tiempo estimado para descifrarla: {fortaleza.formatear_tiempo(segundos)}"
                  f"  ({alfabeto} caracteres posibles)")
 
+    def _actualizar_medidor_palabra(self, contrasena: str) -> None:
+        evaluacion = fortaleza.evaluar(contrasena)
+        bits = evaluacion["entropia"]
+        etiqueta, color, puntaje = fortaleza.nivel_por_entropia(bits)
+        segundos = fortaleza._segundos_para_romper(bits)
+
+        self.barra.actualizar(puntaje, color)
+        self.lbl_nivel.configure(text=f"{etiqueta}   ·   {bits:.0f} bits de entropía",
+                                 foreground=color)
+        self.lbl_tiempo.configure(
+            text=f"Tiempo estimado para descifrarla: {fortaleza.formatear_tiempo(segundos)}")
+
     def _guardar_prefs(self) -> None:
         self.prefs.update({
+            "gen_modo": self.var_modo.get(),
+            "gen_palabra": self.var_palabra.get(),
+            "gen_leet": self.var_leet.get(),
+            "gen_case": self.var_case.get(),
+            "gen_sufijo": self.var_sufijo.get(),
             "gen_longitud": self.var_longitud.get(),
             "gen_mayusculas": self.var_may.get(),
             "gen_minusculas": self.var_min.get(),
