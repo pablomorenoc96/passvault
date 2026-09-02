@@ -4,7 +4,7 @@
 
 A lightweight, offline desktop password manager for Windows written in Python and Tkinter.
 
-PassVault stores your credentials in a locally encrypted database using AES-256-GCM and Argon2id. It runs completely offline—no network sockets, no background telemetry, and no account subscriptions.
+PassVault stores your credentials in a locally encrypted database using AES-256-GCM and Argon2id. It runs completely offline, with no network sockets, no background telemetry, and no account subscriptions.
 
 [🇪🇸 Documentación en Español](README.es.md)
 

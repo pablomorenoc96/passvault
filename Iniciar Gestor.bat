@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableExtensions
-title Gestor de Contrasenas
+title PassVault
 
 rem ==========================================================================
 rem  Arranca el Gestor de Contrasenas.
