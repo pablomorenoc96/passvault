@@ -1,0 +1,12 @@
+# Dependencias del Gestor de Contraseñas
+cryptography>=42.0      # AES-256-GCM y scrypt
+argon2-cffi>=23.1       # Argon2id, el KDF con el que se deriva la llave maestra
+openpyxl>=3.1           # importar y exportar Excel
+
+# Dependencias para desarrollo y pruebas:
+#   pip install pytest
+pytest>=8.0.0
+
+# Solo para compilar el .exe:
+#   pip install pyinstaller
+#   pyinstaller gestor_passwords.spec

@@ -1,0 +1,6 @@
+Sitio,Usuario,Contraseña,URL,Categoría,Notas
+Google,usuario.ejemplo@gmail.com,Clav3!Segura_99,https://accounts.google.com,Correo,Cuenta principal de prueba
+GitHub,dev_ejemplo,Git#Password*2026,https://github.com,Trabajo,Token 2FA configurado
+Netflix,familia@ejemplo.com,Peliculas#4K_2026,https://netflix.com,Entretenimiento,Perfil familiar
+Banco Ejemplo,cliente12345,BanK$Secur3_Pass,https://banco.ejemplo.com,Finanzas,Clave de acceso web
+Wi-Fi Casa,admin,RedDomestica#88,192.168.1.1,Hogar,Router del salon

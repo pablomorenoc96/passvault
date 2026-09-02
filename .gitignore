@@ -1,0 +1,44 @@
+# Archivos de datos y credenciales sensibles (¡NUNCA SUBIR A GIT!)
+*.xlsx
+*.xls
+*.csv
+!ejemplo_cuentas.csv
+*.dat
+*.dat.bak
+vault.dat*
+preferencias.json
+
+# Entornos virtuales y dependencias
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Caches y bytecode de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Compilaciones y artefactos binarios
+build/
+dist/
+*.exe
+*.spec.bak
+*.pkg
+*.manifest
+
+# Editores y entornos de desarrollo
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
