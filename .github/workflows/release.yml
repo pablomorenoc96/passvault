@@ -1,0 +1,41 @@
+name: Crear Release y Compilar Ejecutable (.exe)
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-release:
+    name: Compilar PassVault.exe en Windows
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Descargar código fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Instalar dependencias y PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Compilar ejecutable con PyInstaller
+        run: |
+          pyinstaller gestor_passwords.spec
+
+      - name: Publicar GitHub Release con PassVault.exe
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/PassVault.exe
+          generate_release_notes: true
+          draft: false
+          prerelease: false

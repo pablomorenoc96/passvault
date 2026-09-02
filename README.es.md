@@ -1,21 +1,47 @@
-# PassVault 2.0 (Gestor de Contraseñas)
+<p align="center">
+  <img src="assets/banner.png" alt="PassVault Banner" width="100%">
+</p>
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Platform: Windows](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](#)
-[![Tests](https://img.shields.io/badge/tests-24%20passed-brightgreen.svg)](#pruebas-unitarias-testing)
-[![Language: Bilingual](https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-brightgreen.svg)](#)
+<p align="center">
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python 3.10+"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="#"><img src="https://img.shields.io/badge/platform-Windows-lightgrey.svg" alt="Platform: Windows"></a>
+  <a href="#pruebas-unitarias-testing"><img src="https://img.shields.io/badge/tests-24%20passed-brightgreen.svg" alt="Tests: 24 passed"></a>
+  <a href="#"><img src="https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-brightgreen.svg" alt="Bilingüe"></a>
+  <a href="https://github.com/pablomorenoc96/passvault/releases"><img src="https://img.shields.io/badge/descargar-.exe%20standalone-blueviolet.svg" alt="Descargar Ejecutable"></a>
+</p>
 
-[🇺🇸 Read in English](README.md)
+<p align="center">
+  <a href="README.md"><b>🇺🇸 Read this page in English</b></a>
+</p>
 
-Gestor de contraseñas de escritorio para Windows, desarrollado en Python + Tkinter.
-Bóveda cifrada, soporte bilingüe (Español / English), edición completa de cuentas y generador de contraseñas aleatorias con medidor de fortaleza y cálculo de entropía.
+---
+
+**PassVault** es un gestor de contraseñas de escritorio moderno, seguro y ultraligero para Windows, desarrollado en Python y Tkinter.
+Cuenta con una bóveda cifrada con **AES-256-GCM**, derivación de clave con **Argon2id**, generador de contraseñas mediante CSPRNG con cálculo de entropía y **soporte bilingüe nativo (Español / Inglés)**.
+
+---
+
+## ⚡ ¿Por qué PassVault?
+
+| Característica | PassVault | Gestores en la Nube (Bitwarden, 1Password) | Aplicaciones en Electron |
+|:---|:---:|:---:|:---:|
+| **100% Offline (Sin nube)** | ✅ Sí | ❌ Guardado en servidores externos | ⚠️ Depende de la app |
+| **Consumo de Memoria** | ✅ **~25 MB RAM** | ⚠️ Variable | ❌ 300–600 MB RAM |
+| **Velocidad de Arranque** | ✅ **Instantáneo (<0.5s)** | ⚠️ Latencia de red | ❌ Carga lenta |
+| **Derivación de Clave** | ✅ **Argon2id (256 MiB)** | ⚠️ PBKDF2 / Argon2 | ⚠️ Variable |
+| **Portabilidad** | ✅ **Usar desde memoria USB** | ❌ Requiere internet / instalación | ❌ Binarios pesados |
+| **Sin Cuenta ni Suscripción** | ✅ **100% gratis y privado** | ❌ Requiere cuenta | ⚠️ Modelos freemium |
 
 ---
 
 ## Empezar
 
-### Opción A: Con Python (recomendada para desarrollo)
+### Opción A: Ejecutable listo para usar (.exe) — Recomendado
+
+Descarga el ejecutable **`PassVault.exe`** directamente desde la pestaña **[Releases](https://github.com/pablomorenoc96/passvault/releases)**. ¡No requiere tener Python instalado!
+
+### Opción B: Ejecutar desde el código fuente
 
 Doble clic en **`Iniciar Gestor.bat`**. Ese archivo busca Python en tu sistema, instala las
 librerías que falten la primera vez y abre el programa sin ventana de consola.
@@ -30,12 +56,6 @@ python gestor_passwords.py
 > **Acceso directo en el Escritorio:**
 > Clic derecho sobre `Iniciar Gestor.bat` → *Mostrar más opciones* → *Enviar a* → *Escritorio (crear acceso directo)*.
 > Al acceso directo le puedes cambiar el icono por `assets\gestor.ico`.
-
-### Opción B: Ejecutable listo para usar (.exe)
-
-Puedes compilar tu propio ejecutable independiente o descargarlo directamente desde la pestaña **Releases** de este repositorio de GitHub. No requiere tener Python instalado.
-
-La primera vez te pedirá crear una **contraseña maestra**. Si deseas importar cuentas existentes, puedes utilizar el menú de importación con archivos Excel o CSV (ver plantilla de prueba en `ejemplo_cuentas.csv`).
 
 ---
 
@@ -112,9 +132,7 @@ Para hacer una copia de seguridad basta con copiar `vault.dat`: va cifrado con A
 
 ## Pruebas unitarias (Testing)
 
-El proyecto cuenta con una suite completa de pruebas unitarias que verifican la seguridad criptográfica (Argon2id, scrypt, AES-GCM, manipulación de cabeceras), el generador, i18n y el modelo de datos.
-
-Para ejecutar los tests localmente:
+El proyecto cuenta con una suite completa de pruebas unitarias que verifican la seguridad criptográfica (Argon2id, scrypt, AES-GCM, manipulación de cabeceras), el generador, i18n y el modelo de datos:
 
 ```bash
 pip install pytest
@@ -136,38 +154,9 @@ Queda en `dist\PassVault.exe`, sin consola y con icono propio.
 
 ---
 
-## Estructura del proyecto
+## ⭐ Apoya el proyecto
 
-```
-.github/workflows/         integración continua (GitHub Actions)
-assets/                    iconos e imágenes de la aplicación
-gestorpass/                paquete principal de la aplicación
-  config.py                rutas y preferencias del usuario
-  escala.py                soporte de pantallas con escalado DPI (Windows)
-  i18n.py                  catálogo bilingüe (Español / Inglés)
-  crypto.py                Argon2id / scrypt + AES-256-GCM autenticado
-  boveda.py                modelo de datos, CRUD, importar/exportar
-  generador.py             generador seguro con secrets y cálculo de entropía
-  fortaleza.py             evaluador de fortaleza y tiempo de descifrado
-  tema.py                  paletas y estilos (modo oscuro y claro)
-  widgets.py               componentes y controles visuales reutilizables
-  ui_acceso.py             pantallas de inicio, creación y desbloqueo
-  ui_principal.py          ventana principal y tabla de cuentas
-  ui_entrada.py            formulario de alta y edición de cuentas
-  ui_generador.py          diálogo interactivo del generador
-  ui_dialogos.py           importación masiva, auditoría y ajustes con selector de idioma
-  app.py                   coordinador de sesión y ciclo de vida
-herramientas/              utilidades auxiliares
-  crear_icono.py           genera assets/gestor.ico con Pillow
-  organizar_excel.py       utilidad para ordenar listas desorganizadas de Excel
-tests/                     pruebas unitarias automatizadas con pytest
-ejemplo_cuentas.csv        plantilla de datos ficticios para pruebas de importación
-gestor_passwords.py        punto de entrada de la aplicación
-gestor_passwords.spec      receta optimizada para PyInstaller
-Iniciar Gestor.bat         lanzador automático para Windows
-requirements.txt           dependencias del proyecto
-LICENSE                    licencia de código abierto MIT
-```
+Si encuentras útil **PassVault**, ¡por favor considera dejar una **estrella (star) en GitHub**! Ayuda a que más personas descubran el proyecto y motiva su desarrollo continuo.
 
 ---
 

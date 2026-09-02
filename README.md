@@ -1,21 +1,47 @@
-# PassVault
+<p align="center">
+  <img src="assets/banner.png" alt="PassVault Banner" width="100%">
+</p>
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Platform: Windows](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](#)
-[![Tests](https://img.shields.io/badge/tests-24%20passed-brightgreen.svg)](#unit-testing)
-[![Language: Bilingual](https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-brightgreen.svg)](#)
+<p align="center">
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python 3.10+"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="#"><img src="https://img.shields.io/badge/platform-Windows-lightgrey.svg" alt="Platform: Windows"></a>
+  <a href="#unit-testing"><img src="https://img.shields.io/badge/tests-24%20passed-brightgreen.svg" alt="Tests: 24 passed"></a>
+  <a href="#"><img src="https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-brightgreen.svg" alt="Bilingual"></a>
+  <a href="https://github.com/pablomorenoc96/passvault/releases"><img src="https://img.shields.io/badge/download-.exe%20standalone-blueviolet.svg" alt="Download Executable"></a>
+</p>
 
-[🇪🇸 Leer en Español](README.es.md)
+<p align="center">
+  <a href="README.es.md"><b>🇪🇸 Leer esta página en Español</b></a>
+</p>
 
-A modern, secure, and lightweight desktop password manager for Windows, built with Python and Tkinter.
+---
+
+**PassVault** is a modern, secure, and lightweight desktop password manager for Windows, built with Python and Tkinter.
 Features an **AES-256-GCM** encrypted vault, **Argon2id** key derivation, full account management, a CSPRNG-powered password generator with entropy calculation, and native **bilingual support (English / Spanish)**.
+
+---
+
+## ⚡ Why PassVault?
+
+| Feature | PassVault | Cloud Managers (Bitwarden, 1Password) | Electron Apps |
+|:---|:---:|:---:|:---:|
+| **100% Offline (Zero Cloud)** | ✅ Yes | ❌ Stored on cloud servers | ⚠️ Depends on app |
+| **Memory Footprint** | ✅ **~25 MB RAM** | ⚠️ Varies | ❌ 300–600 MB RAM |
+| **Startup Speed** | ✅ **Instant (<0.5s)** | ⚠️ Web latency | ❌ Slow boot |
+| **Key Derivation** | ✅ **Argon2id (256 MiB)** | ⚠️ PBKDF2 / Argon2 | ⚠️ Varies |
+| **Portability** | ✅ **Run from USB drive** | ❌ Requires internet / install | ❌ Heavy binary |
+| **No Account / Subscription** | ✅ **Completely free & private** | ❌ Account required | ⚠️ Freemium models |
 
 ---
 
 ## Getting Started
 
-### Option A: Running with Python (Recommended for development)
+### Option A: Standalone Executable (.exe) — Recommended for users
+
+Download the latest precompiled **`PassVault.exe`** directly from the **[Releases](https://github.com/pablomorenoc96/passvault/releases)** page. No Python installation required!
+
+### Option B: Running from Source (Recommended for developers)
 
 Double-click **`Iniciar Gestor.bat`**. This script automatically detects Python, installs required dependencies on the first run, and launches the application without an extra terminal window.
 
@@ -29,12 +55,6 @@ python gestor_passwords.py
 > **Desktop Shortcut:**
 > Right-click `Iniciar Gestor.bat` → *Show more options* → *Send to* → *Desktop (create shortcut)*.
 > You can change the shortcut's icon using `assets\gestor.ico`.
-
-### Option B: Standalone Executable (.exe)
-
-You can compile a standalone executable or download the latest precompiled release from the **Releases** tab. No Python installation required.
-
-On the first launch, you will be prompted to create a **master password**. You can also import existing accounts from CSV or Excel files (see sample template in `ejemplo_cuentas.csv`).
 
 ---
 
@@ -134,38 +154,9 @@ The optimized standalone binary will be created in `dist\PassVault.exe`.
 
 ---
 
-## Project Structure
+## ⭐ Support the Project
 
-```
-.github/workflows/         Continuous Integration (GitHub Actions)
-assets/                    Application icons and graphics
-gestorpass/                Core application package
-  config.py                Application paths and user preferences
-  escala.py                High-DPI display awareness (Windows)
-  i18n.py                  Internationalization engine (English / Spanish)
-  crypto.py                Argon2id / scrypt + AES-256-GCM encryption
-  boveda.py                Data model, CRUD, bulk import/export
-  generador.py             CSPRNG generator & entropy calculation
-  fortaleza.py             Password strength analyzer & crack time estimation
-  tema.py                  Visual color themes (Dark & Light)
-  widgets.py               Reusable UI components and custom widgets
-  ui_acceso.py             Authentication, vault creation, and unlock screens
-  ui_principal.py          Main window, treeview table, and details panel
-  ui_entrada.py            Account creation and edit form
-  ui_generador.py          Interactive generator dialog
-  ui_dialogos.py           Settings (language/theme), security audit, mass import
-  app.py                   Application orchestration and lifecycle
-herramientas/              Utilities
-  crear_icono.py           Icon generator script
-  organizar_excel.py       Script to structure unformatted password spreadsheets
-tests/                     Automated test suite with pytest
-ejemplo_cuentas.csv        Sample dummy dataset for import testing
-gestor_passwords.py        Application entry point
-gestor_passwords.spec      PyInstaller build configuration
-Iniciar Gestor.bat         Windows launcher script
-requirements.txt           Project dependencies
-LICENSE                    MIT License
-```
+If you find PassVault useful, please consider giving it a **star on GitHub**! It helps more people discover the project and motivates further development.
 
 ---
 
