@@ -59,42 +59,56 @@ def generar_banner():
                     pass
         return ImageFont.load_default()
 
-    fuente_titulo = obtener_fuente("segoeuib", 68)
-    fuente_sub = obtener_fuente("segoeui", 23)
-    fuente_pill = obtener_fuente("segoeuib", 16)
+    fuente_titulo = obtener_fuente("segoeuib", 66)
+    fuente_sub = obtener_fuente("segoeui", 22)
+    fuente_pill = obtener_fuente("segoeui", 14)
+
+    # Coordenada X común para alineación perfecta a la izquierda
+    x_comun = 360
 
     # Título "PassVault"
-    draw.text((360, 110), "PassVault", font=fuente_titulo, fill=(255, 255, 255, 255))
+    draw.text((x_comun, 108), "PassVault", font=fuente_titulo, fill=(255, 255, 255, 255))
 
-    # Versión
-    draw.text((680, 140), "v2.0", font=fuente_pill, fill=(79, 142, 255, 255))
+    # Badge de versión alineado al título
+    bbox_titulo = draw.textbbox((x_comun, 108), "PassVault", font=fuente_titulo)
+    draw.text((bbox_titulo[2] + 16, 126), "v2.0", font=obtener_fuente("segoeuib", 15),
+              fill=(86, 154, 255, 255))
 
-    # Subtítulo
-    draw.text((364, 190), "Secure, Lightweight & Offline Desktop Password Manager",
+    # Subtítulo con alineación exacta
+    draw.text((x_comun, 192), "Secure, Lightweight & Offline Desktop Password Manager",
               font=fuente_sub, fill=(185, 200, 225, 255))
 
-    # Pills / Badges destacados
+    # Pills / Badges destacados (altura fija idéntica de 32px y radio completo)
     pills = [
-        ("AES-256-GCM", (40, 75, 140)),
-        ("Argon2id KDF", (30, 95, 115)),
-        ("100% Offline", (38, 115, 68)),
-        ("Zero Cloud", (90, 50, 125)),
-        ("Windows", (45, 60, 90)),
+        ("AES-256-GCM", (35, 65, 120)),
+        ("Argon2id KDF", (25, 80, 100)),
+        ("100% Offline", (30, 95, 55)),
+        ("Zero Cloud", (75, 42, 105)),
+        ("Windows", (40, 52, 75)),
     ]
 
-    x_pill = 364
-    y_pill = 245
+    x_pill = x_comun
+    y_pill = 244
+    alto_pill = 32
+
     for texto, color_bg in pills:
         bbox = draw.textbbox((0, 0), texto, font=fuente_pill)
         w_txt = bbox[2] - bbox[0]
-        h_txt = bbox[3] - bbox[1]
-        pad_x, pad_y = 14, 8
+        pad_x = 16
+        ancho_pill = w_txt + pad_x * 2
 
-        pill_rect = [x_pill, y_pill, x_pill + w_txt + pad_x * 2, y_pill + h_txt + pad_y * 2]
-        draw.rounded_rectangle(pill_rect, radius=8, fill=color_bg, outline=(255, 255, 255, 40))
-        draw.text((x_pill + pad_x, y_pill + pad_y - 2), texto, font=fuente_pill,
-                  fill=(255, 255, 255, 240))
-        x_pill += w_txt + pad_x * 2 + 12
+        pill_rect = [x_pill, y_pill, x_pill + ancho_pill, y_pill + alto_pill]
+        # Borde y relleno con esquinas redondeadas
+        draw.rounded_rectangle(pill_rect, radius=alto_pill // 2, fill=color_bg,
+                               outline=(255, 255, 255, 50), width=1)
+
+        # Centrado geométrico absoluto (middle-middle)
+        cx = x_pill + ancho_pill / 2
+        cy = y_pill + alto_pill / 2
+        draw.text((cx, cy), texto, font=fuente_pill, fill=(240, 245, 255, 245),
+                  anchor="mm")
+
+        x_pill += ancho_pill + 10
 
     # Línea decorativa inferior
     for x in range(ancho):
