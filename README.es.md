@@ -28,6 +28,8 @@ Construí PassVault como un proyecto personal porque quería una forma sencilla 
 - **Herramienta de auditoría:** Analiza la bóveda local en busca de contraseñas reutilizadas en varios sitios, credenciales débiles (<60 bits de entropía) y entradas vacías.
 - **Localización:** Interfaz bilingüe nativa (Español e Inglés) con autodetección del idioma del sistema y selector manual en Ajustes.
 
+Para conocer la especificación criptográfica detallada, el formato binario y el modelo de amenazas completo, consulta [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ---
 
 ## Limitaciones (Lo que PassVault NO hace)

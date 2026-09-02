@@ -28,6 +28,8 @@ I built PassVault as a personal project because I wanted a simple, reliable way 
 - **Audit Tool:** Scans the local vault for reused passwords across accounts, weak credentials (<60 bits of entropy), and empty entries.
 - **Localization:** Native English and Spanish interface with automatic Windows system locale detection and manual toggle in Settings.
 
+For detailed cryptographic specifications, file format structure, and the complete threat model, see [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ---
 
 ## Honest Limitations (What PassVault is NOT)
