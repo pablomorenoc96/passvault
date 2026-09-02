@@ -4,7 +4,7 @@ from __future__ import annotations
 import tkinter as tk
 from tkinter import ttk
 
-from . import fortaleza
+from . import fortaleza, i18n
 from .escala import px
 from .widgets import BarraFortaleza, DialogoBase
 
@@ -271,9 +271,10 @@ class DialogoAjustes(DialogoBase):
     """Preferencias de la aplicación."""
 
     def __init__(self, padre, colores: dict, prefs: dict, ruta_vault: str):
-        super().__init__(padre, colores, "Ajustes", 480, 430)
+        super().__init__(padre, colores, i18n.t("settings_title"), 500, 500)
         self.prefs = prefs
         self.ruta_vault = ruta_vault
+        self.var_idioma = tk.StringVar(value=prefs.get("idioma", "auto"))
         self.var_tema = tk.StringVar(value=prefs.get("tema", "oscuro"))
         self.var_bloqueo = tk.IntVar(value=int(prefs.get("minutos_autobloqueo", 5)))
         self.var_portapapeles = tk.IntVar(value=int(prefs.get("segundos_portapapeles", 30)))
@@ -281,45 +282,58 @@ class DialogoAjustes(DialogoBase):
 
     def _construir(self) -> None:
         raiz = self.contenedor
-        ttk.Label(raiz, text="Ajustes", style="Titulo.TLabel").pack(anchor="w", pady=(0, 16))
+        ttk.Label(raiz, text=i18n.t("settings_title"), style="Titulo.TLabel").pack(anchor="w", pady=(0, 16))
 
         caja = ttk.Frame(raiz, style="Panel.TFrame", padding=16)
         caja.pack(fill="x")
 
-        ttk.Label(caja, text="APARIENCIA", style="Seccion.TLabel").pack(anchor="w")
+        # Idioma / Language
+        ttk.Label(caja, text=i18n.t("settings_lang_label").upper(), style="Seccion.TLabel").pack(anchor="w")
+        fila_lang = ttk.Frame(caja, style="Panel.TFrame")
+        fila_lang.pack(anchor="w", pady=(6, 14))
+        combo_lang = ttk.Combobox(fila_lang, textvariable=self.var_idioma, state="readonly", width=14,
+                                  values=["auto", "en", "es"])
+        combo_lang.pack(side="left")
+        ttk.Label(fila_lang, text="(auto · en: English · es: Español)",
+                  style="PanelTenue.TLabel").pack(side="left", padx=8)
+
+        # Tema
+        ttk.Label(caja, text=i18n.t("settings_theme_label").upper(), style="Seccion.TLabel").pack(anchor="w")
         fila = ttk.Frame(caja, style="Panel.TFrame")
         fila.pack(anchor="w", pady=(6, 14))
-        ttk.Radiobutton(fila, text="Oscuro", value="oscuro",
+        ttk.Radiobutton(fila, text=i18n.t("settings_theme_dark"), value="oscuro",
                         variable=self.var_tema).pack(side="left", padx=(0, 16))
-        ttk.Radiobutton(fila, text="Claro", value="claro",
+        ttk.Radiobutton(fila, text=i18n.t("settings_theme_light"), value="claro",
                         variable=self.var_tema).pack(side="left")
 
-        ttk.Label(caja, text="BLOQUEO AUTOMÁTICO", style="Seccion.TLabel").pack(anchor="w")
+        # Autobloqueo
+        ttk.Label(caja, text=i18n.t("settings_autolock_label").upper(), style="Seccion.TLabel").pack(anchor="w")
         fila2 = ttk.Frame(caja, style="Panel.TFrame")
         fila2.pack(anchor="w", pady=(6, 14))
         ttk.Spinbox(fila2, from_=0, to=120, width=6,
                     textvariable=self.var_bloqueo).pack(side="left")
-        ttk.Label(fila2, text="minutos sin actividad  (0 = desactivado)",
+        ttk.Label(fila2, text=i18n.t("settings_autolock_min", m="min") + " (0 = off)",
                   style="PanelTenue.TLabel").pack(side="left", padx=8)
 
-        ttk.Label(caja, text="PORTAPAPELES", style="Seccion.TLabel").pack(anchor="w")
+        # Portapapeles
+        ttk.Label(caja, text=i18n.t("settings_clipboard_label").upper(), style="Seccion.TLabel").pack(anchor="w")
         fila3 = ttk.Frame(caja, style="Panel.TFrame")
         fila3.pack(anchor="w", pady=(6, 0))
         ttk.Spinbox(fila3, from_=0, to=300, width=6,
                     textvariable=self.var_portapapeles).pack(side="left")
-        ttk.Label(fila3, text="segundos antes de borrarlo  (0 = no borrar)",
+        ttk.Label(fila3, text=i18n.t("settings_clipboard_sec", s="sec") + " (0 = off)",
                   style="PanelTenue.TLabel").pack(side="left", padx=8)
 
-        ttk.Label(raiz, text="ARCHIVO DE LA BÓVEDA", style="Seccion.TLabel").pack(
+        ttk.Label(raiz, text="VAULT FILE", style="Seccion.TLabel").pack(
             anchor="w", pady=(16, 4))
         ttk.Label(raiz, text=self.ruta_vault, style="Tenue.TLabel",
-                  wraplength=px(420), justify="left").pack(anchor="w")
+                  wraplength=px(440), justify="left").pack(anchor="w")
 
         acciones = ttk.Frame(raiz)
         acciones.pack(fill="x", pady=(20, 0))
-        ttk.Button(acciones, text="Guardar", style="Acento.TButton",
+        ttk.Button(acciones, text=i18n.t("save"), style="Acento.TButton",
                    command=self._aceptar).pack(side="right")
-        ttk.Button(acciones, text="Cancelar",
+        ttk.Button(acciones, text=i18n.t("cancel"),
                    command=self.cancelar).pack(side="right", padx=(0, 8))
 
     def _aceptar(self) -> None:
@@ -329,6 +343,7 @@ class DialogoAjustes(DialogoBase):
         except tk.TclError:
             bloqueo, portapapeles = 5, 30
         self.resultado = {
+            "idioma": self.var_idioma.get(),
             "tema": self.var_tema.get(),
             "minutos_autobloqueo": bloqueo,
             "segundos_portapapeles": portapapeles,

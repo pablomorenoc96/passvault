@@ -70,13 +70,24 @@ def _repeticiones(contrasena: str) -> bool:
     return False
 
 
+from . import i18n
+
+CLAVES_NIVELES = [
+    (0, "strength_very_weak", "#e5484d"),
+    (36, "strength_weak", "#f76b15"),
+    (60, "strength_fair", "#f5d90a"),
+    (80, "strength_strong", "#46a758"),
+    (110, "strength_very_strong", "#12a594"),
+]
+
+
 def nivel_por_entropia(entropia: float) -> tuple[str, str, int]:
     """Devuelve (etiqueta, color, puntaje 0-4) para una entropía conocida."""
-    etiqueta, color, puntaje = NIVELES[0][1], NIVELES[0][2], 0
-    for indice, (minimo, nombre, tono) in enumerate(NIVELES):
+    clave, color, puntaje = CLAVES_NIVELES[0][1], CLAVES_NIVELES[0][2], 0
+    for indice, (minimo, c_nombre, tono) in enumerate(CLAVES_NIVELES):
         if entropia >= minimo:
-            etiqueta, color, puntaje = nombre, tono, indice
-    return etiqueta, color, puntaje
+            clave, color, puntaje = c_nombre, tono, indice
+    return i18n.t(clave), color, puntaje
 
 
 def _segundos_para_romper(entropia: float) -> float:
@@ -97,8 +108,8 @@ def evaluar(contrasena: str) -> dict:
     avisos: list[str] = []
 
     if largo == 0:
-        return {"entropia": 0.0, "etiqueta": "Vacía", "color": "#7d7d7d",
-                "puntaje": 0, "avisos": ["Sin contraseña"], "segundos": 0.0}
+        return {"entropia": 0.0, "etiqueta": i18n.t("strength_empty"), "color": "#7d7d7d",
+                "puntaje": 0, "avisos": [i18n.t("warn_empty")], "segundos": 0.0}
 
     alfabeto = _alfabeto_efectivo(contrasena)
     entropia = largo * math.log2(alfabeto) if alfabeto > 1 else 0.0
@@ -132,50 +143,48 @@ def evaluar(contrasena: str) -> dict:
     elif largo < 12:
         avisos.append("Menos de 12 caracteres: se recomienda alargarla")
 
-    etiqueta, color, puntaje = "Muy débil", NIVELES[0][2], 0
-    for indice, (minimo, nombre, tono) in enumerate(NIVELES):
+    clave, color, puntaje = CLAVES_NIVELES[0][1], CLAVES_NIVELES[0][2], 0
+    for indice, (minimo, c_nombre, tono) in enumerate(CLAVES_NIVELES):
         if entropia >= minimo:
-            etiqueta, color, puntaje = nombre, tono, indice
+            clave, color, puntaje = c_nombre, tono, indice
 
     segundos = _segundos_para_romper(entropia)
 
-    return {"entropia": entropia, "etiqueta": etiqueta, "color": color,
+    return {"entropia": entropia, "etiqueta": i18n.t(clave), "color": color,
             "puntaje": puntaje, "avisos": avisos, "segundos": segundos}
 
 
 def formatear_tiempo(segundos: float) -> str:
-    """Convierte segundos en un texto legible ('3 días', '14 mil millones de años')."""
+    """Convierte segundos en un texto legible ('3 días' o '3 days')."""
     if segundos == float("inf"):
-        return "prácticamente eterno"
+        return i18n.t("time_eternal")
     if segundos < 1:
-        return "instantáneo"
+        return i18n.t("time_instant")
     unidades = [
-        (60, "minutos"), (60, "horas"), (24, "días"), (365.25, "años"),
+        (60, "time_minutes"), (60, "time_hours"), (24, "time_days"), (365.25, "time_years"),
     ]
     valor = segundos
-    nombre = "segundos"
+    clave = "time_seconds"
     for factor, siguiente in unidades:
         if valor < factor:
             break
         valor /= factor
-        nombre = siguiente
+        clave = siguiente
     else:
-        nombre = "años"
+        clave = "time_years"
 
-    if nombre == "años":
-        # Mas alla de cierto punto la cifra exacta no dice nada y no cabe en
-        # pantalla: se resume.
+    if clave == "time_years":
         if valor >= 1e15:
-            return "más de mil billones de años"
+            return i18n.t("time_eternal")
         if valor >= 1e12:
-            return f"{_miles(valor / 1e12)} billones de años"
+            return f"{_miles(valor / 1e12)} {i18n.t('time_trillion_years')}"
         if valor >= 1e9:
-            return f"{_miles(valor / 1e9)} mil millones de años"
+            return f"{_miles(valor / 1e9)} {i18n.t('time_billion_years')}"
         if valor >= 1e6:
-            return f"{_miles(valor / 1e6)} millones de años"
+            return f"{_miles(valor / 1e6)} {i18n.t('time_million_years')}"
         if valor >= 1e3:
-            return f"{_miles(valor / 1e3)} mil años"
-    return f"{_miles(valor)} {nombre}"
+            return f"{_miles(valor / 1e3)} {i18n.t('time_thousand_years')}"
+    return f"{_miles(valor)} {i18n.t(clave)}"
 
 
 def _miles(valor: float) -> str:

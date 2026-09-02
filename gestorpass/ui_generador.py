@@ -4,7 +4,7 @@ from __future__ import annotations
 import tkinter as tk
 from tkinter import ttk
 
-from . import fortaleza, generador
+from . import fortaleza, generador, i18n
 from .widgets import BarraFortaleza, DialogoBase, Tooltip
 
 
@@ -17,7 +17,7 @@ class DialogoGenerador(DialogoBase):
 
     def __init__(self, padre, colores: dict, prefs: dict, al_copiar=None,
                  modo_seleccion: bool = False):
-        super().__init__(padre, colores, "Generador de contraseñas", 520,
+        super().__init__(padre, colores, i18n.t("gen_title"), 520,
                          560 if modo_seleccion else 520)
         self.prefs = prefs
         self.al_copiar = al_copiar
@@ -39,8 +39,8 @@ class DialogoGenerador(DialogoBase):
         c = self.colores
         raiz = self.contenedor
 
-        ttk.Label(raiz, text="Generador de contraseñas", style="Titulo.TLabel").pack(anchor="w")
-        ttk.Label(raiz, text="Aleatorias, con el generador criptográfico del sistema.",
+        ttk.Label(raiz, text=i18n.t("gen_title"), style="Titulo.TLabel").pack(anchor="w")
+        ttk.Label(raiz, text=i18n.t("gen_subtitle"),
                   style="Tenue.TLabel").pack(anchor="w", pady=(2, 16))
 
         # --- resultado ------------------------------------------------------
@@ -94,24 +94,24 @@ class DialogoGenerador(DialogoBase):
         self.escala.pack(fill="x", pady=(6, 12))
 
         # --- tipos de caracter ----------------------------------------------
-        ttk.Label(opciones, text="INCLUIR", style="Seccion.TLabel").pack(anchor="w")
+        ttk.Label(opciones, text="INCLUIR" if i18n.get_idioma() == "es" else "INCLUDE", style="Seccion.TLabel").pack(anchor="w")
         rejilla = ttk.Frame(opciones, style="Panel.TFrame")
         rejilla.pack(fill="x", pady=(6, 0))
         rejilla.columnconfigure(0, weight=1)
         rejilla.columnconfigure(1, weight=1)
 
         casillas = [
-            ("Mayúsculas  A-Z", self.var_may, 0, 0),
-            ("Números  0-9", self.var_num, 0, 1),
-            ("Minúsculas  a-z", self.var_min, 1, 0),
-            ("Símbolos  !@#$", self.var_sim, 1, 1),
+            (i18n.t("gen_uppercase"), self.var_may, 0, 0),
+            (i18n.t("gen_numbers"), self.var_num, 0, 1),
+            (i18n.t("gen_lowercase"), self.var_min, 1, 0),
+            (i18n.t("gen_symbols"), self.var_sim, 1, 1),
         ]
         for texto, variable, fila_i, col in casillas:
             ttk.Checkbutton(rejilla, text=texto, variable=variable,
                             command=self.regenerar).grid(row=fila_i, column=col,
                                                          sticky="w", pady=3)
 
-        ttk.Checkbutton(opciones, text="Evitar caracteres ambiguos  (l 1 I O 0 S 5)",
+        ttk.Checkbutton(opciones, text=i18n.t("gen_no_ambiguous"),
                         variable=self.var_amb,
                         command=self.regenerar).pack(anchor="w", pady=(8, 0))
 
@@ -124,14 +124,14 @@ class DialogoGenerador(DialogoBase):
         acciones.pack(fill="x", pady=(14, 0))
 
         if self.modo_seleccion:
-            ttk.Button(acciones, text="Usar esta contraseña", style="Acento.TButton",
+            ttk.Button(acciones, text=i18n.t("gen_use_btn"), style="Acento.TButton",
                        command=self.usar).pack(side="right")
-            ttk.Button(acciones, text="Cancelar",
+            ttk.Button(acciones, text=i18n.t("cancel"),
                        command=self.cancelar).pack(side="right", padx=(0, 8))
         else:
-            ttk.Button(acciones, text="Copiar", style="Acento.TButton",
+            ttk.Button(acciones, text=i18n.t("copy"), style="Acento.TButton",
                        command=self.copiar).pack(side="right")
-            ttk.Button(acciones, text="Cerrar",
+            ttk.Button(acciones, text=i18n.t("close"),
                        command=self.cancelar).pack(side="right", padx=(0, 8))
 
         self.bind("<Control-r>", lambda _e: self.regenerar())

@@ -1,185 +1,174 @@
-# Gestor de Contraseñas 2.0
+# PassVault
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](#)
-[![Tests](https://img.shields.io/badge/tests-22%20passed-brightgreen.svg)](#pruebas-unitarias-testing)
+[![Tests](https://img.shields.io/badge/tests-24%20passed-brightgreen.svg)](#unit-testing)
+[![Language: Bilingual](https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-brightgreen.svg)](#)
 
-Gestor de contraseñas de escritorio para Windows, desarrollado en Python + Tkinter.
-Bóveda cifrada, edición completa de cuentas y generador de contraseñas
-aleatorias con medidor de fortaleza y cálculo de entropía.
+[🇪🇸 Leer en Español](README.es.md)
+
+A modern, secure, and lightweight desktop password manager for Windows, built with Python and Tkinter.
+Features an **AES-256-GCM** encrypted vault, **Argon2id** key derivation, full account management, a CSPRNG-powered password generator with entropy calculation, and native **bilingual support (English / Spanish)**.
 
 ---
 
-## Empezar
+## Getting Started
 
-### Opción A: Con Python (recomendada para desarrollo)
+### Option A: Running with Python (Recommended for development)
 
-Doble clic en **`Iniciar Gestor.bat`**. Ese archivo busca Python en tu sistema, instala las
-librerías que falten la primera vez y abre el programa sin ventana de consola.
+Double-click **`Iniciar Gestor.bat`**. This script automatically detects Python, installs required dependencies on the first run, and launches the application without an extra terminal window.
 
-O a mano desde una terminal:
+Or manually via terminal:
 
 ```bash
 pip install -r requirements.txt
 python gestor_passwords.py
 ```
 
-> **Acceso directo en el Escritorio:**
-> Clic derecho sobre `Iniciar Gestor.bat` → *Mostrar más opciones* → *Enviar a* → *Escritorio (crear acceso directo)*.
-> Al acceso directo le puedes cambiar el icono por `assets\gestor.ico`.
+> **Desktop Shortcut:**
+> Right-click `Iniciar Gestor.bat` → *Show more options* → *Send to* → *Desktop (create shortcut)*.
+> You can change the shortcut's icon using `assets\gestor.ico`.
 
-### Opción B: Ejecutable listo para usar (.exe)
+### Option B: Standalone Executable (.exe)
 
-Puedes compilar tu propio ejecutable independiente o descargarlo directamente desde la pestaña **Releases** de este repositorio de GitHub. No requiere tener Python instalado.
+You can compile a standalone executable or download the latest precompiled release from the **Releases** tab. No Python installation required.
 
-La primera vez te pedirá crear una **contraseña maestra**. Si deseas importar cuentas existentes, puedes utilizar el menú de importación con archivos Excel o CSV (ver plantilla de prueba en `ejemplo_cuentas.csv`).
-
----
-
-## Qué hace
-
-### Seguridad
-- **Bóveda cifrada con AES-256-GCM:** El archivo en disco no contiene ni un
-  solo dato en claro: ni los sitios, ni los usuarios, ni las contraseñas.
-- **Llave derivada con Argon2id** (256 MiB, 4 iteraciones) a partir de la
-  contraseña maestra. Cada intento de adivinarla le cuesta al atacante ~0.25 s
-  y 256 MiB de RAM, lo que hace inviable la fuerza bruta. Si falta
-  `argon2-cffi`, usa `scrypt` como respaldo.
-- **La maestra no se guarda en ningún lado:** Se comprueba porque el
-  descifrado autentica: si es incorrecta, GCM falla y la rechaza.
-- **Cabecera autenticada (AAD):** si alguien edita el archivo para bajar los
-  parámetros del cifrado, deja de abrir.
-- **Bloqueo automático** por inactividad (5 min por defecto).
-- **El portapapeles se limpia solo** 30 segundos después de copiar.
-- **Guardado atómico con respaldo:** se escribe a `.tmp`, se rota el anterior a
-  `.bak` y se reemplaza. Un corte de luz a media escritura no corrompe la base de datos.
-
-### Gestión de cuentas
-- Alta, **edición** y borrado de cada campo por separado: sitio, usuario,
-  contraseña, URL, categoría, notas y favorito.
-- Cada cuenta tiene un identificador único (UUID), así que **dos cuentas del mismo
-  sitio con el mismo usuario no se pisan** al editar o borrar.
-- Historial de las últimas 10 contraseñas de cada cuenta.
-- Buscador instantáneo, categorías, favoritos y orden por cualquier columna.
-- Duplicar una cuenta, abrir su web en el navegador, copiar usuario o contraseña.
-- Importar desde Excel, CSV o pegando texto; exportar a Excel o CSV.
-
-### Generador de contraseñas
-Al estilo del generador de Avast:
-- Longitud de 4 a 64 con deslizador.
-- Mayúsculas, minúsculas, números y símbolos, activables por separado.
-- Opción de evitar caracteres ambiguos (`l 1 I O 0 S 5`).
-- Garantiza al menos un carácter de cada tipo elegido.
-- Medidor en vivo: nivel, **bits de entropía** y tiempo estimado para descifrarla.
-- Usa `secrets`, el generador criptográfico del sistema operativo (CSPRNG). Nunca `random`.
-
-### Análisis de seguridad
-Revisa toda la bóveda y lista lo que hay que arreglar: contraseñas débiles,
-**contraseñas repetidas en varios sitios** (el riesgo más grave), entradas sin
-contraseña, y una nota de salud general. Doble clic en un aviso para corregirlo.
+On the first launch, you will be prompted to create a **master password**. You can also import existing accounts from CSV or Excel files (see sample template in `ejemplo_cuentas.csv`).
 
 ---
 
-## Dónde se guardan los datos
+## Features
 
-| Recurso | Ubicación |
+### Security & Cryptography
+- **AES-256-GCM Authenticated Encryption:** The stored database contains zero plaintext data: sites, usernames, URLs, categories, notes, and passwords are all fully encrypted.
+- **Argon2id Key Derivation:** Master key derived using Argon2id (256 MiB memory cost, 4 iterations, 4 parallelism threads), exceeding OWASP recommendations. Brute-force attacks require prohibitive computational memory. Includes `scrypt` fallback.
+- **Zero Knowledge Architecture:** The master password is never stored anywhere on disk or in memory. Decryption authenticates via GCM tag; incorrect passwords immediately fail authentication.
+- **Authenticated Additional Data (AAD):** Prevents tampering with header metadata or downgrading encryption parameters.
+- **Automatic Inactivity Lock:** Configurable auto-lock (5 minutes default).
+- **Clipboard Auto-Clear:** Clears copied passwords from the system clipboard after 30 seconds (configurable).
+- **Atomic File Saving with Backup:** Writes to `.tmp`, rotates the previous vault to `.bak`, and atomically replaces the file. Power outages during write operations will not corrupt the database.
+
+### Bilingual Support (English / Spanish)
+- Full UI translation in **English and Spanish**.
+- Automatically detects system locale on startup.
+- Dynamic language switcher in the **Settings** dialog with instant preference persistence.
+
+### Account Management
+- Create, edit, and delete individual account fields: site, username, password, URL, category, notes, and favorite status.
+- Unique UUID identification prevents collisions between multiple accounts sharing the same site or username.
+- Previous password history tracking (stores last 10 passwords per account).
+- Instant search filter across all fields, category grouping, favorites, and sortable columns.
+- Duplicate account, open web URL in default browser, and quick copy actions.
+- Bulk import/export via Excel (.xlsx), CSV, and raw text.
+
+### Cryptographic Password Generator
+- Length slider from 4 to 64 characters.
+- Toggles for Uppercase, Lowercase, Numbers, and Symbols.
+- Option to exclude ambiguous characters (`l 1 I O 0 S 5`).
+- Guaranteed inclusion of at least one character from each selected set.
+- Real-time entropy calculation (in bits) and brute-force crack time estimates.
+- Built strictly using `secrets` (operating system CSPRNG), never pseudorandom `random`.
+
+### Security Audit
+Scans your entire vault to detect security risks:
+- Weak passwords.
+- **Reused passwords across different accounts** (the highest credential stuffing risk).
+- Empty password entries.
+- Overall vault health score (0-100).
+
+---
+
+## Data Storage
+
+| Resource | Path |
 |---|---|
-| Bóveda | `%APPDATA%\GestorPasswords\vault.dat` |
-| Respaldo | `%APPDATA%\GestorPasswords\vault.dat.bak` |
-| Preferencias | `%APPDATA%\GestorPasswords\preferencias.json` |
+| Encrypted Vault | `%APPDATA%\GestorPasswords\vault.dat` |
+| Vault Backup | `%APPDATA%\GestorPasswords\vault.dat.bak` |
+| User Preferences | `%APPDATA%\GestorPasswords\preferencias.json` |
 
-**Modo portable:** si colocas un `vault.dat` en la misma carpeta que el programa
-(por ejemplo en una memoria USB), se usa ese en lugar del de `%APPDATA%`.
+**Portable Mode:** If a `vault.dat` file exists in the same folder as the executable/script (e.g., on a USB drive), PassVault uses it instead of `%APPDATA%`.
 
-Para hacer una copia de seguridad basta con copiar `vault.dat`: va cifrado con AES-256-GCM, así
-que se puede guardar en la nube sin riesgo mientras la contraseña maestra sea robusta.
-
-> **No hay forma de recuperar la contraseña maestra.** No se guarda en el
-> programa ni en ningún servidor. Si se te olvida, los datos se pierden.
+> **Notice:** There is no master password recovery mechanism. Passwords are never sent to any server. If you lose your master password, your encrypted data cannot be recovered.
 
 ---
 
-## Atajos de teclado
+## Keyboard Shortcuts
 
-| Atajo | Acción |
+| Shortcut | Action |
 |---|---|
-| `Ctrl + N` | Nueva cuenta |
-| `Ctrl + E` | Editar la seleccionada |
-| `Ctrl + C` | Copiar contraseña |
-| `Ctrl + U` | Copiar usuario |
-| `Ctrl + F` | Ir al buscador |
-| `Ctrl + G` | Generador de contraseñas |
-| `Ctrl + L` | Bloquear bóveda |
-| `Supr` | Eliminar cuenta seleccionada |
-| Doble clic | Editar cuenta |
-| Clic derecho | Menú contextual de acciones |
+| `Ctrl + N` | New account |
+| `Ctrl + E` | Edit selected account |
+| `Ctrl + C` | Copy password |
+| `Ctrl + U` | Copy username |
+| `Ctrl + F` | Focus search bar |
+| `Ctrl + G` | Open password generator |
+| `Ctrl + L` | Lock vault |
+| `Del` | Delete selected account |
+| Double-click | Edit account |
+| Right-click | Context action menu |
 
 ---
 
-## Pruebas unitarias (Testing)
+## Unit Testing
 
-El proyecto cuenta con una suite completa de pruebas unitarias que verifican la seguridad criptográfica (Argon2id, scrypt, AES-GCM, manipulación de cabeceras), el generador y el modelo de datos.
-
-Para ejecutar los tests localmente:
+PassVault includes a complete automated test suite covering cryptography (AES-256-GCM, Argon2id, scrypt, tampering detection), the CSPRNG generator, password entropy, and vault data models:
 
 ```bash
 pip install pytest
 pytest -v
 ```
 
-El repositorio también incluye integración continua (CI) mediante **GitHub Actions** en `.github/workflows/ci.yml`, que ejecuta las pruebas automáticamente en Windows y Linux en cada cambio.
+All tests run continuously via **GitHub Actions** across Windows and Linux (`.github/workflows/ci.yml`).
 
 ---
 
-## Compilar el .exe
+## Building the Executable
 
 ```bash
 pip install pyinstaller
 pyinstaller gestor_passwords.spec
 ```
 
-Queda en `dist\Gestor de Contrasenas.exe`, sin consola y con icono propio. El
-`.spec` excluye librerías pesadas innecesarias, reduciendo el tamaño de ~180 MB a ~25 MB.
-
-El `.exe` guarda la bóveda en `%APPDATA%`, por lo que **puedes compilar o borrar `dist\` sin perder tus contraseñas.**
+The optimized standalone binary will be created in `dist\PassVault.exe`.
 
 ---
 
-## Estructura del proyecto
+## Project Structure
 
 ```
-.github/workflows/         integración continua (GitHub Actions)
-assets/                    iconos e imágenes de la aplicación
-gestorpass/                paquete principal del gestor
-  config.py                rutas y preferencias del usuario
-  escala.py                soporte de pantallas con escalado DPI (Windows)
-  crypto.py                Argon2id / scrypt + AES-256-GCM autenticado
-  boveda.py                modelo de datos, CRUD, importar/exportar
-  generador.py             generador seguro con secrets y cálculo de entropía
-  fortaleza.py             evaluador de fortaleza y tiempo de descifrado
-  tema.py                  paletas y estilos (modo oscuro y claro)
-  widgets.py               componentes y controles visuales reutilizables
-  ui_acceso.py             pantallas de inicio, creación y desbloqueo
-  ui_principal.py          ventana principal y tabla de cuentas
-  ui_entrada.py            formulario de alta y edición de cuentas
-  ui_generador.py          diálogo interactivo del generador
-  ui_dialogos.py           importación masiva, auditoría y configuración
-  app.py                   coordinador de sesión y ciclo de vida
-herramientas/              utilidades auxiliares
-  crear_icono.py           genera assets/gestor.ico con Pillow
-  organizar_excel.py       utilidad para ordenar listas desorganizadas de Excel
-tests/                     pruebas unitarias automatizadas con pytest
-ejemplo_cuentas.csv        plantilla de datos ficticios para pruebas de importación
-gestor_passwords.py        punto de entrada de la aplicación
-gestor_passwords.spec      receta optimizada para PyInstaller
-Iniciar Gestor.bat         lanzador automático para Windows
-requirements.txt           dependencias del proyecto
-LICENSE                    licencia de código abierto MIT
+.github/workflows/         Continuous Integration (GitHub Actions)
+assets/                    Application icons and graphics
+gestorpass/                Core application package
+  config.py                Application paths and user preferences
+  escala.py                High-DPI display awareness (Windows)
+  i18n.py                  Internationalization engine (English / Spanish)
+  crypto.py                Argon2id / scrypt + AES-256-GCM encryption
+  boveda.py                Data model, CRUD, bulk import/export
+  generador.py             CSPRNG generator & entropy calculation
+  fortaleza.py             Password strength analyzer & crack time estimation
+  tema.py                  Visual color themes (Dark & Light)
+  widgets.py               Reusable UI components and custom widgets
+  ui_acceso.py             Authentication, vault creation, and unlock screens
+  ui_principal.py          Main window, treeview table, and details panel
+  ui_entrada.py            Account creation and edit form
+  ui_generador.py          Interactive generator dialog
+  ui_dialogos.py           Settings (language/theme), security audit, mass import
+  app.py                   Application orchestration and lifecycle
+herramientas/              Utilities
+  crear_icono.py           Icon generator script
+  organizar_excel.py       Script to structure unformatted password spreadsheets
+tests/                     Automated test suite with pytest
+ejemplo_cuentas.csv        Sample dummy dataset for import testing
+gestor_passwords.py        Application entry point
+gestor_passwords.spec      PyInstaller build configuration
+Iniciar Gestor.bat         Windows launcher script
+requirements.txt           Project dependencies
+LICENSE                    MIT License
 ```
 
 ---
 
-## Licencia
+## License
 
-Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

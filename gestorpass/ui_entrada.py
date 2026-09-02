@@ -4,7 +4,7 @@ from __future__ import annotations
 import tkinter as tk
 from tkinter import ttk
 
-from . import fortaleza
+from . import fortaleza, i18n
 from .boveda import Entrada
 from .escala import px
 from .ui_generador import DialogoGenerador
@@ -16,7 +16,7 @@ class DialogoEntrada(DialogoBase):
 
     def __init__(self, padre, colores: dict, prefs: dict, categorias: list[str],
                  entrada: Entrada | None = None, al_copiar=None):
-        titulo = "Editar entrada" if entrada else "Nueva entrada"
+        titulo = i18n.t("entry_edit_title") if entrada else i18n.t("entry_new_title")
         super().__init__(padre, colores, titulo, 520, 730)
         self.prefs = prefs
         self.entrada = entrada
@@ -54,14 +54,14 @@ class DialogoEntrada(DialogoBase):
             ttk.Label(caja, text=texto, style="Seccion.TLabel").pack(anchor="w",
                                                                     pady=(arriba, 4))
 
-        etiqueta("SITIO O SERVICIO *", 0)
+        etiqueta(i18n.t("entry_site_label"), 0)
         self.entry_sitio = ttk.Entry(caja, textvariable=self.var_sitio)
         self.entry_sitio.pack(fill="x", ipady=2)
 
-        etiqueta("USUARIO O CORREO")
+        etiqueta(i18n.t("entry_user_label"))
         ttk.Entry(caja, textvariable=self.var_usuario).pack(fill="x", ipady=2)
 
-        etiqueta("CONTRASEÑA")
+        etiqueta(i18n.t("entry_pass_label"))
         self.campo_pass = CampoContrasena(
             caja, c, self.var_pass,
             al_generar=self._abrir_generador,
@@ -76,15 +76,15 @@ class DialogoEntrada(DialogoBase):
                                     wraplength=px(430), justify="left")
         self.lbl_fuerza.pack(anchor="w")
 
-        etiqueta("SITIO WEB (URL)")
+        etiqueta(i18n.t("entry_url_label"))
         ttk.Entry(caja, textvariable=self.var_url).pack(fill="x", ipady=2)
 
-        etiqueta("CATEGORÍA")
+        etiqueta(i18n.t("entry_cat_label"))
         combo = ttk.Combobox(caja, textvariable=self.var_categoria,
                              values=self.categorias)
         combo.pack(fill="x")
 
-        etiqueta("NOTAS")
+        etiqueta(i18n.t("entry_notes_label"))
         marco_notas = tk.Frame(caja, bg=c["borde"], bd=0)
         marco_notas.pack(fill="both", expand=True)
         self.txt_notas = tk.Text(marco_notas, height=4, wrap="word", bd=0,
@@ -95,21 +95,21 @@ class DialogoEntrada(DialogoBase):
         if self.entrada and self.entrada.notas:
             self.txt_notas.insert("1.0", self.entrada.notas)
 
-        ttk.Checkbutton(caja, text="Marcar como favorito",
+        ttk.Checkbutton(caja, text=i18n.t("entry_fav_label"),
                         variable=self.var_favorito).pack(anchor="w", pady=(12, 0))
 
         if self.entrada:
-            pie = f"Creada: {self.entrada.creado[:16].replace('T', ' ')}"
+            pie = f"Created: {self.entrada.creado[:16].replace('T', ' ')}" if i18n.get_idioma() == "en" else f"Creada: {self.entrada.creado[:16].replace('T', ' ')}"
             if self.entrada.modificado != self.entrada.creado:
-                pie += f"   ·   Modificada: {self.entrada.modificado[:16].replace('T', ' ')}"
+                pie += f"   ·   Mod: {self.entrada.modificado[:16].replace('T', ' ')}"
             if self.entrada.historial:
-                pie += f"   ·   {len(self.entrada.historial)} cambio(s) de contraseña"
+                pie += f"   ·   ({len(self.entrada.historial)})"
             ttk.Label(caja, text=pie, style="PanelTenue.TLabel").pack(anchor="w", pady=(10, 0))
 
         # --- acciones (el contenedor ya se creó arriba) -----------------------
-        ttk.Button(acciones, text="Guardar", style="Acento.TButton",
+        ttk.Button(acciones, text=i18n.t("save"), style="Acento.TButton",
                    command=self._guardar).pack(side="right")
-        ttk.Button(acciones, text="Cancelar",
+        ttk.Button(acciones, text=i18n.t("cancel"),
                    command=self.cancelar).pack(side="right", padx=(0, 8))
 
         self.lbl_error = ttk.Label(acciones, text="", style="Tenue.TLabel",

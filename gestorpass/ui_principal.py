@@ -5,7 +5,7 @@ import tkinter as tk
 import webbrowser
 from tkinter import ttk
 
-from . import fortaleza
+from . import fortaleza, i18n
 from .escala import px
 from .widgets import Tooltip
 
@@ -55,7 +55,7 @@ class VentanaPrincipal(ttk.Frame):
 
         ttk.Label(barra, text="\U0001F510", style="Panel.TLabel",
                   font=("Segoe UI Emoji", 16)).pack(side="left")
-        ttk.Label(barra, text="Mis contraseñas", style="PanelTitulo.TLabel").pack(
+        ttk.Label(barra, text=i18n.t("app_title"), style="PanelTitulo.TLabel").pack(
             side="left", padx=(8, 24))
 
         contenedor_busqueda = ttk.Frame(barra, style="Panel.TFrame")
@@ -65,23 +65,23 @@ class VentanaPrincipal(ttk.Frame):
         self.entry_busqueda.pack(fill="x")
         self.entry_busqueda.insert(0, "")
         self.var_busqueda.trace_add("write", lambda *_: self.refrescar())
-        Tooltip(self.entry_busqueda, "Buscar por sitio, usuario, URL, categoría o notas (Ctrl+F)")
+        Tooltip(self.entry_busqueda, i18n.t("search_placeholder"))
 
         derecha = ttk.Frame(barra, style="Panel.TFrame")
         derecha.pack(side="right", padx=(20, 0))
 
         botones = [
-            ("＋  Nueva", self.nueva_entrada, "Acento.TButton", "Agregar una cuenta (Ctrl+N)"),
-            ("✨  Generador", self.abrir_generador, "Panel.TButton", "Generar contraseña (Ctrl+G)"),
-            ("\U0001F6E1  Analizar", self.abrir_auditoria, "Panel.TButton", "Análisis de seguridad"),
+            (i18n.t("btn_new"), self.nueva_entrada, "Acento.TButton", "Ctrl+N"),
+            (i18n.t("btn_generator"), self.abrir_generador, "Panel.TButton", "Ctrl+G"),
+            (i18n.t("btn_audit"), self.abrir_auditoria, "Panel.TButton", i18n.t("audit_title")),
         ]
         for texto, comando, estilo, ayuda in botones:
             boton = ttk.Button(derecha, text=texto, command=comando, style=estilo)
             boton.pack(side="left", padx=(0, 8))
             Tooltip(boton, ayuda)
 
-        for texto, comando, ayuda in (("⚙", self.app.abrir_ajustes, "Ajustes"),
-                                      ("\U0001F512", self.app.bloquear, "Bloquear ahora (Ctrl+L)")):
+        for texto, comando, ayuda in (("⚙", self.app.abrir_ajustes, i18n.t("btn_settings")),
+                                      ("\U0001F512", self.app.bloquear, i18n.t("btn_lock") + " (Ctrl+L)")):
             boton = ttk.Button(derecha, text=texto, width=3, style="Icono.TButton",
                                command=comando)
             boton.pack(side="left", padx=(0, 4))
@@ -122,22 +122,23 @@ class VentanaPrincipal(ttk.Frame):
                        command=comando).pack(fill="x", pady=1)
 
         activo_todas = self.filtro_categoria is None and not self.solo_favoritos
-        agregar(f"  Todas   ({len(boveda.entradas)})", activo_todas,
+        agregar(f"  {i18n.t('filter_all')}   ({len(boveda.entradas)})", activo_todas,
                 lambda: self._filtrar(None, False))
 
-        agregar(f"  ★ Favoritos   ({favoritos})", self.solo_favoritos,
+        agregar(f"  {i18n.t('filter_favorites')}   ({favoritos})", self.solo_favoritos,
                 lambda: self._filtrar(None, True))
 
         categorias = boveda.categorias()
         sin_categoria = contador.get("Sin categoría", 0)
         if categorias or sin_categoria:
             ttk.Separator(self.lateral, orient="horizontal").pack(fill="x", pady=10)
-            ttk.Label(self.lateral, text="CATEGORÍAS", style="Seccion.TLabel").pack(
+            ttk.Label(self.lateral, text="CATEGORÍAS" if i18n.get_idioma() == "es" else "CATEGORIES", style="Seccion.TLabel").pack(
                 anchor="w", pady=(0, 6))
 
         for nombre in categorias + (["Sin categoría"] if sin_categoria else []):
             activo = self.filtro_categoria == nombre and not self.solo_favoritos
-            agregar(f"  {nombre}   ({contador.get(nombre, 0)})", activo,
+            nombre_mostrar = i18n.t("filter_uncategorized") if nombre == "Sin categoría" else nombre
+            agregar(f"  {nombre_mostrar}   ({contador.get(nombre, 0)})", activo,
                     lambda n=nombre: self._filtrar(n, False))
 
     # Proporción del ancho disponible que ocupa cada columna. Suman menos de 1
@@ -169,9 +170,11 @@ class VentanaPrincipal(ttk.Frame):
         self.tree = ttk.Treeview(marco, columns=columnas, show="headings",
                                  selectmode="extended")
 
-        for clave, titulo in (("sitio", "Sitio"), ("usuario", "Usuario"),
-                              ("contrasena", "Contraseña"), ("fuerza", "Fortaleza"),
-                              ("categoria", "Categoría")):
+        for clave, titulo in (("sitio", i18n.t("col_site")),
+                              ("usuario", i18n.t("col_user")),
+                              ("contrasena", i18n.t("col_pass")),
+                              ("fuerza", "Strength" if i18n.get_idioma() == "en" else "Fortaleza"),
+                              ("categoria", i18n.t("col_cat"))):
             self.tree.heading(clave, text=titulo, anchor="w",
                               command=lambda k=clave: self._ordenar_por(k))
             self.tree.column(clave, width=px(140), minwidth=px(70), anchor="w",
@@ -198,15 +201,15 @@ class VentanaPrincipal(ttk.Frame):
         self.menu = tk.Menu(self, tearoff=0, bg=c["panel"], fg=c["texto"],
                             activebackground=c["seleccion"], activeforeground=c["texto"],
                             bd=0)
-        self.menu.add_command(label="Copiar contraseña     Ctrl+C", command=self.copiar_pass)
-        self.menu.add_command(label="Copiar usuario        Ctrl+U", command=self.copiar_usuario)
-        self.menu.add_command(label="Abrir sitio web", command=self.abrir_web)
+        self.menu.add_command(label=f"{i18n.t('ctx_copy_pass')}     Ctrl+C", command=self.copiar_pass)
+        self.menu.add_command(label=f"{i18n.t('ctx_copy_user')}        Ctrl+U", command=self.copiar_usuario)
+        self.menu.add_command(label=i18n.t("ctx_open_url"), command=self.abrir_web)
         self.menu.add_separator()
-        self.menu.add_command(label="Editar...             Enter", command=self.editar_entrada)
-        self.menu.add_command(label="Duplicar", command=self.duplicar_entrada)
-        self.menu.add_command(label="Marcar favorito", command=self.alternar_favorito)
+        self.menu.add_command(label=f"{i18n.t('ctx_edit')}...             Enter", command=self.editar_entrada)
+        self.menu.add_command(label=i18n.t("ctx_duplicate"), command=self.duplicar_entrada)
+        self.menu.add_command(label=i18n.t("entry_fav_label"), command=self.alternar_favorito)
         self.menu.add_separator()
-        self.menu.add_command(label="Eliminar              Supr", command=self.eliminar_entradas)
+        self.menu.add_command(label=f"{i18n.t('ctx_delete')}              Supr", command=self.eliminar_entradas)
 
     # -------------------------------------------------------------------- detalle
     def _detalle(self, padre) -> None:
@@ -224,7 +227,8 @@ class VentanaPrincipal(ttk.Frame):
         if entrada is None:
             ttk.Label(self.panel, text="\U0001F5C2", style="Panel.TLabel",
                       font=("Segoe UI Emoji", 28), foreground=c["borde"]).pack(pady=(60, 10))
-            ttk.Label(self.panel, text="Selecciona una cuenta\npara ver sus datos",
+            texto_vacio = "Select an account\nto see details" if i18n.get_idioma() == "en" else "Selecciona una cuenta\npara ver sus datos"
+            ttk.Label(self.panel, text=texto_vacio,
                       style="PanelTenue.TLabel", justify="center").pack()
             return
 
@@ -234,13 +238,13 @@ class VentanaPrincipal(ttk.Frame):
         boton_fav = ttk.Button(encabezado, text=estrella, width=3, style="Icono.TButton",
                                command=self.alternar_favorito)
         boton_fav.pack(side="right")
-        Tooltip(boton_fav, "Marcar o quitar de favoritos")
+        Tooltip(boton_fav, i18n.t("entry_fav_label"))
         ttk.Label(encabezado, text=entrada.sitio or "(sin nombre)", style="PanelTitulo.TLabel",
                   wraplength=px(210), justify="left").pack(side="left", anchor="w")
 
         if entrada.categoria:
             ttk.Label(self.panel, text=entrada.categoria.upper(),
-                      style="Seccion.TLabel").pack(anchor="w", pady=(2, 0))
+              style="Seccion.TLabel").pack(anchor="w", pady=(2, 0))
 
         ttk.Separator(self.panel, orient="horizontal").pack(fill="x", pady=14)
 
@@ -258,12 +262,12 @@ class VentanaPrincipal(ttk.Frame):
                 boton = ttk.Button(fila, text="\U0001F4CB", width=3, style="Icono.TButton",
                                    command=copiar)
                 boton.pack(side="right")
-                Tooltip(boton, "Copiar")
+                Tooltip(boton, i18n.t("copy"))
             return etiqueta
 
-        campo("USUARIO", entrada.usuario, self.copiar_usuario)
+        campo(i18n.t("entry_user_label"), entrada.usuario, self.copiar_usuario)
 
-        ttk.Label(self.panel, text="CONTRASEÑA", style="Seccion.TLabel").pack(anchor="w")
+        ttk.Label(self.panel, text=i18n.t("entry_pass_label"), style="Seccion.TLabel").pack(anchor="w")
         fila_pass = ttk.Frame(self.panel, style="Panel.TFrame")
         fila_pass.pack(fill="x", pady=(2, 6))
         texto_pass = entrada.contrasena if self.mostrar_pass else OCULTO
@@ -272,12 +276,12 @@ class VentanaPrincipal(ttk.Frame):
         boton_ojo = ttk.Button(fila_pass, text="\U0001F441", width=3, style="Icono.TButton",
                                command=self.alternar_visibilidad)
         boton_ojo.pack(side="right")
-        Tooltip(boton_ojo, "Mostrar u ocultar contraseñas")
+        Tooltip(boton_ojo, "Show/Hide passwords" if i18n.get_idioma() == "en" else "Mostrar u ocultar contraseñas")
         if entrada.contrasena:
             boton_copiar = ttk.Button(fila_pass, text="\U0001F4CB", width=3,
                                       style="Icono.TButton", command=self.copiar_pass)
             boton_copiar.pack(side="right", padx=(0, 4))
-            Tooltip(boton_copiar, "Copiar contraseña (Ctrl+C)")
+            Tooltip(boton_copiar, i18n.t("ctx_copy_pass"))
 
         if entrada.contrasena:
             info = fortaleza.evaluar(entrada.contrasena)
@@ -288,7 +292,7 @@ class VentanaPrincipal(ttk.Frame):
             ttk.Label(self.panel, text="", style="PanelTenue.TLabel").pack(pady=(0, 6))
 
         if entrada.url:
-            ttk.Label(self.panel, text="SITIO WEB", style="Seccion.TLabel").pack(anchor="w")
+            ttk.Label(self.panel, text=i18n.t("entry_url_label"), style="Seccion.TLabel").pack(anchor="w")
             enlace = ttk.Label(self.panel, text=entrada.url, style="PanelTenue.TLabel",
                                foreground=c["acento"], wraplength=px(250), justify="left",
                                cursor="hand2")
@@ -296,18 +300,18 @@ class VentanaPrincipal(ttk.Frame):
             enlace.bind("<Button-1>", lambda _e: self.abrir_web())
 
         if entrada.notas:
-            ttk.Label(self.panel, text="NOTAS", style="Seccion.TLabel").pack(anchor="w")
+            ttk.Label(self.panel, text=i18n.t("entry_notes_label"), style="Seccion.TLabel").pack(anchor="w")
             ttk.Label(self.panel, text=entrada.notas, style="Panel.TLabel",
                       wraplength=px(250), justify="left").pack(anchor="w", pady=(2, 12))
 
         acciones = ttk.Frame(self.panel, style="Panel.TFrame")
         acciones.pack(side="bottom", fill="x")
-        ttk.Button(acciones, text="Editar", style="Acento.TButton",
+        ttk.Button(acciones, text=i18n.t("edit"), style="Acento.TButton",
                    command=self.editar_entrada).pack(side="left", fill="x", expand=True)
-        ttk.Button(acciones, text="Eliminar", style="Peligro.TButton",
+        ttk.Button(acciones, text=i18n.t("delete"), style="Peligro.TButton",
                    command=self.eliminar_entradas).pack(side="left", padx=(8, 0))
 
-        fechas = f"Modificada: {entrada.modificado[:10]}"
+        fechas = f"Modified: {entrada.modificado[:10]}" if i18n.get_idioma() == "en" else f"Modificada: {entrada.modificado[:10]}"
         ttk.Label(self.panel, text=fechas, style="PanelTenue.TLabel").pack(
             side="bottom", anchor="w", pady=(0, 10))
 
@@ -375,9 +379,10 @@ class VentanaPrincipal(ttk.Frame):
     def _actualizar_estado(self) -> None:
         total = len(self.app.boveda.entradas)
         visibles = len(self._visibles)
-        texto = f"{total} cuentas guardadas"
+        favs = sum(1 for e in self.app.boveda.entradas if e.favorito)
+        texto = i18n.t("status_accounts", total=total, favs=favs)
         if visibles != total:
-            texto = f"Mostrando {visibles} de {total} cuentas"
+            texto = i18n.t("status_filtered", count=visibles, total=total)
         self.lbl_estado.configure(text=texto)
 
     def _ordenar_por(self, columna: str) -> None:

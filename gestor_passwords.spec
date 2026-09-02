@@ -33,7 +33,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='Gestor de Contrasenas',
+    name='PassVault',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

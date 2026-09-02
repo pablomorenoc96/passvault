@@ -5,7 +5,7 @@ import time
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
-from . import config, escala, tema
+from . import config, escala, i18n, tema
 from .boveda import (Boveda, BovedaCorrupta, ContrasenaIncorrecta, Entrada,
                      ErrorBoveda, buscar_excel_para_migrar)
 from .escala import px
@@ -32,6 +32,7 @@ class App:
                 pass  # Sin icono se ve el de Tk, pero la app funciona igual.
 
         self.prefs = config.cargar_preferencias()
+        i18n.set_idioma(self.prefs.get("idioma", "auto"))
         self.colores = tema.aplicar(self.root, self.prefs.get("tema", "oscuro"))
 
         self.boveda: Boveda | None = None
@@ -340,12 +341,19 @@ class App:
             return
 
         tema_anterior = self.prefs.get("tema")
+        idioma_anterior = self.prefs.get("idioma")
         self.prefs.update(dialogo.resultado)
         config.guardar_preferencias(self.prefs)
 
-        if dialogo.resultado["tema"] != tema_anterior:
+        cambio_tema = dialogo.resultado.get("tema") != tema_anterior
+        cambio_idioma = dialogo.resultado.get("idioma") != idioma_anterior
+
+        if cambio_idioma:
+            i18n.set_idioma(self.prefs.get("idioma", "auto"))
+
+        if cambio_tema or cambio_idioma:
             self._recargar_tema()
-        self.aviso("Ajustes guardados.")
+        self.aviso(i18n.t("success"))
 
     def _recargar_tema(self) -> None:
         self.colores = tema.aplicar(self.root, self.prefs.get("tema", "oscuro"))

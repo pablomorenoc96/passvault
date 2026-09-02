@@ -4,7 +4,7 @@ from __future__ import annotations
 import tkinter as tk
 from tkinter import ttk
 
-from . import fortaleza
+from . import fortaleza, i18n
 from .escala import px
 from .widgets import BarraFortaleza, centrar
 
@@ -31,7 +31,7 @@ class VentanaAcceso(tk.Toplevel):
         self.cancelado = False
         self._intentos = 0
 
-        self.title("Gestor de Contraseñas")
+        self.title(i18n.t("app_title"))
         self.configure(bg=colores["fondo"])
         self.resizable(False, False)
 
@@ -73,10 +73,9 @@ class VentanaAcceso(tk.Toplevel):
         ttk.Label(marco, text="\U0001F510", font=("Segoe UI Emoji", 34)).pack()
 
         titulos = {
-            "crear": ("Crea tu bóveda", "Elige una contraseña maestra. Será la única\n"
-                                        "llave de todas tus contraseñas."),
-            "abrir": ("Bienvenido de vuelta", "Escribe tu contraseña maestra para abrir la bóveda."),
-            "desbloquear": ("Bóveda bloqueada", "Sesión bloqueada por inactividad."),
+            "crear": (i18n.t("access_create_title"), i18n.t("access_create_desc")),
+            "abrir": (i18n.t("access_open_title"), i18n.t("access_open_desc")),
+            "desbloquear": (i18n.t("access_open_title"), i18n.t("access_open_desc")),
         }
         titulo, subtitulo = titulos[self.modo]
 
@@ -84,7 +83,7 @@ class VentanaAcceso(tk.Toplevel):
         ttk.Label(marco, text=subtitulo, style="Tenue.TLabel",
                   justify="center").pack(pady=(0, 20))
 
-        ttk.Label(marco, text="Contraseña maestra", style="Tenue.TLabel").pack(anchor="w")
+        ttk.Label(marco, text=i18n.t("access_master_label"), style="Tenue.TLabel").pack(anchor="w")
         self.entry_pass = ttk.Entry(marco, textvariable=self.var_pass, show="•",
                                     font=("Consolas", 11))
         self.entry_pass.pack(fill="x", pady=(4, 10), ipady=3)
@@ -93,18 +92,19 @@ class VentanaAcceso(tk.Toplevel):
         if self.modo == "crear":
             self.barra = BarraFortaleza(marco, c, ancho=376, fondo=c["fondo"])
             self.barra.pack(fill="x")
-            self.lbl_fuerza = ttk.Label(marco, text="Mínimo 8 caracteres",
+            self.lbl_fuerza = ttk.Label(marco, text=i18n.t("access_err_short"),
                                         style="Tenue.TLabel")
             self.lbl_fuerza.pack(anchor="w", pady=(6, 12))
             self.var_pass.trace_add("write", self._medir)
 
-            ttk.Label(marco, text="Repite la contraseña", style="Tenue.TLabel").pack(anchor="w")
+            ttk.Label(marco, text=i18n.t("access_confirm_label"), style="Tenue.TLabel").pack(anchor="w")
             self.entry_pass2 = ttk.Entry(marco, textvariable=self.var_pass2, show="•",
                                          font=("Consolas", 11))
             self.entry_pass2.pack(fill="x", pady=(4, 10), ipady=3)
             self.entry_pass2.bind("<Return>", self._al_pulsar_enter)
 
-        ttk.Checkbutton(marco, text="Mostrar contraseña", variable=self.var_ver,
+        ttk.Checkbutton(marco, text="Show password" if i18n.get_idioma() == "en" else "Mostrar contraseña",
+                        variable=self.var_ver,
                         style="Fondo.TCheckbutton",
                         command=self._alternar_ver).pack(anchor="w")
 
@@ -113,8 +113,8 @@ class VentanaAcceso(tk.Toplevel):
                                    justify="left")
         self.lbl_error.pack(anchor="w", pady=(10, 0))
 
-        texto_boton = {"crear": "Crear bóveda", "abrir": "Abrir bóveda",
-                       "desbloquear": "Desbloquear"}[self.modo]
+        texto_boton = {"crear": i18n.t("access_btn_create"), "abrir": i18n.t("access_btn_unlock"),
+                       "desbloquear": i18n.t("access_btn_unlock")}[self.modo]
         self.boton = ttk.Button(marco, text=texto_boton, style="Acento.TButton",
                                 command=self._aceptar)
         self.boton.pack(fill="x", pady=(16, 0), ipady=4)
@@ -167,28 +167,27 @@ class VentanaAcceso(tk.Toplevel):
     def _aceptar(self) -> None:
         contrasena = self.var_pass.get()
         if not contrasena:
-            self._error("Escribe la contraseña maestra.")
+            self._error(i18n.t("access_err_empty"))
             return
 
         if self.modo == "crear":
             if len(contrasena) < LONGITUD_MINIMA_MAESTRA:
-                self._error(f"La maestra debe tener al menos {LONGITUD_MINIMA_MAESTRA} caracteres.")
+                self._error(i18n.t("access_err_short"))
                 return
             if contrasena != self.var_pass2.get():
-                self._error("Las dos contraseñas no coinciden.")
+                self._error(i18n.t("access_err_mismatch"))
                 return
             self.resultado = contrasena
             self.destroy()
             return
 
         # Modos "abrir" y "desbloquear": la verificación la hace quien nos llamó.
-        self.boton.configure(state="disabled", text="Verificando...")
+        self.boton.configure(state="disabled", text="...")
         self.lbl_error.configure(text="")
         self.update_idletasks()
 
         resultado = self.verificador(contrasena) if self.verificador else True
-        self.boton.configure(state="normal",
-                             text="Abrir bóveda" if self.modo == "abrir" else "Desbloquear")
+        self.boton.configure(state="normal", text=i18n.t("access_btn_unlock"))
 
         if resultado is True:
             self.resultado = contrasena
@@ -196,9 +195,9 @@ class VentanaAcceso(tk.Toplevel):
             return
 
         self._intentos += 1
-        mensaje = resultado if isinstance(resultado, str) else "Contraseña maestra incorrecta."
+        mensaje = resultado if isinstance(resultado, str) else i18n.t("access_err_wrong")
         if self._intentos >= 3:
-            mensaje += f"  (intento {self._intentos})"
+            mensaje += f"  (#{self._intentos})"
         self._error(mensaje)
         self.var_pass.set("")
         self.entry_pass.focus_set()

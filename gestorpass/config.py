@@ -6,13 +6,14 @@ import os
 import sys
 from pathlib import Path
 
-APP_NAME = "Gestor de Contraseñas"
+APP_NAME = "PassVault"
 APP_VERSION = "2.0"
 VAULT_FILENAME = "vault.dat"
 PREFS_FILENAME = "preferencias.json"
 
 # Valores por defecto de las preferencias del usuario.
 DEFAULTS = {
+    "idioma": "auto",              # "auto" | "en" | "es"
     "tema": "oscuro",              # "oscuro" | "claro"
     "minutos_autobloqueo": 5,      # 0 = desactivado
     "segundos_portapapeles": 30,   # 0 = no limpiar
