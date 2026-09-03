@@ -1,123 +1,157 @@
-"""Genera assets/banner.png para el README de GitHub y Social Preview."""
+"""Genera assets/banner.png para el README de GitHub con estética de estudio de ingeniería.
+
+Diseño profesional sobrio: sin cuadrículas de neón de IA, sin píldoras de colores
+tipo chicle, con tipografía nítida, paleta slate/obsidian y especificaciones unificadas.
+"""
 from __future__ import annotations
 
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 
 def generar_banner():
-    ancho, alto = 1200, 420
-    base = Image.new("RGBA", (ancho, alto), (15, 20, 32, 255))
+    ancho, alto = 1200, 400
+    # Lienzo base obsidian/slate oscuro profesional (#0B0F19)
+    base = Image.new("RGBA", (ancho, alto), (11, 15, 25, 255))
+
+    # Gradiente sutil y elegante de estudio (luz suave proveniente del tercio izquierdo)
+    luz = Image.new("RGBA", (ancho, alto), (0, 0, 0, 0))
+    luz_draw = ImageDraw.Draw(luz)
+
+    # Resplandor muy suave y difuso (no neón agresivo)
+    centro_x, centro_y = 280, 200
+    for r in range(450, 50, -25):
+        alpha = int((450 - r) * 0.05)
+        luz_draw.ellipse(
+            [centro_x - r, centro_y - r * 0.8, centro_x + r, centro_y + r * 0.8],
+            fill=(30, 58, 110, alpha)
+        )
+    luz = luz.filter(ImageFilter.GaussianBlur(30))
+    base = Image.alpha_composite(base, luz)
     draw = ImageDraw.Draw(base)
 
-    # Fondo degradado horizontal suave
-    c_izq = (12, 17, 29)
-    c_der = (24, 34, 58)
-    for x in range(ancho):
-        t = x / (ancho - 1)
-        r = int(c_izq[0] + (c_der[0] - c_izq[0]) * t)
-        g = int(c_izq[1] + (c_der[1] - c_izq[1]) * t)
-        b = int(c_izq[2] + (c_der[2] - c_izq[2]) * t)
-        draw.line([(x, 0), (x, alto)], fill=(r, g, b, 255))
+    # Marco exterior sutil tipo tarjeta de desarrollo (1px, #1E293B)
+    draw.rounded_rectangle(
+        [1, 1, ancho - 2, alto - 2],
+        radius=14,
+        outline=(30, 41, 59, 255),
+        width=1,
+    )
 
-    # Rejilla sutil de fondo
-    linea_color = (255, 255, 255, 8)
-    for x in range(0, ancho, 40):
-        draw.line([(x, 0), (x, alto)], fill=linea_color)
-    for y in range(0, alto, 40):
-        draw.line([(0, y), (ancho, y)], fill=linea_color)
-
-    # Resplandor azul detrás del icono
-    glow = Image.new("RGBA", (ancho, alto), (0, 0, 0, 0))
-    glow_draw = ImageDraw.Draw(glow)
-    for radio in range(160, 40, -10):
-        alfa = int((160 - radio) * 0.4)
-        glow_draw.ellipse([210 - radio, 210 - radio, 210 + radio, 210 + radio],
-                          fill=(56, 114, 245, alfa))
-    base = Image.alpha_composite(base, glow)
-    draw = ImageDraw.Draw(base)
-
-    # Pegar icono del proyecto
+    # Cargar y posicionar el icono del proyecto
     ruta_icono = Path(__file__).resolve().parent.parent / "assets" / "gestor.png"
     if ruta_icono.exists():
-        icono = Image.open(ruta_icono).convert("RGBA")
-        icono = icono.resize((190, 190), Image.Resampling.LANCZOS)
-        base.paste(icono, (115, 115), icono)
+        icono_orig = Image.open(ruta_icono).convert("RGBA")
+        tam_icono = 164
+        icono = icono_orig.resize((tam_icono, tam_icono), Image.Resampling.LANCZOS)
 
-    # Intentar cargar fuentes del sistema o usar default
-    def obtener_fuente(nombre, tamano):
-        rutas = [
-            Path("C:/Windows/Fonts") / f"{nombre}.ttf",
-            Path("C:/Windows/Fonts/segoeuib.ttf"),
-            Path("C:/Windows/Fonts/arialbd.ttf"),
-        ]
-        for r in rutas:
-            if r.exists():
+        # Sombra suave natural bajo el icono (drop shadow)
+        sombra = Image.new("RGBA", (ancho, alto), (0, 0, 0, 0))
+        s_draw = ImageDraw.Draw(sombra)
+        ix, iy = 90, 118
+        s_draw.rounded_rectangle(
+            [ix + 4, iy + 12, ix + tam_icono - 4, iy + tam_icono + 14],
+            radius=34,
+            fill=(0, 0, 0, 140)
+        )
+        sombra = sombra.filter(ImageFilter.GaussianBlur(14))
+        base = Image.alpha_composite(base, sombra)
+        base.paste(icono, (ix, iy), icono)
+
+    draw = ImageDraw.Draw(base)
+
+    # Función auxiliar para fuentes de Windows con fallback seguro
+    def obtener_fuente(nombres: list[str], tamano: int):
+        for nombre in nombres:
+            ruta = Path("C:/Windows/Fonts") / f"{nombre}.ttf"
+            if ruta.exists():
                 try:
-                    return ImageFont.truetype(str(r), tamano)
+                    return ImageFont.truetype(str(ruta), tamano)
                 except Exception:
                     pass
         return ImageFont.load_default()
 
-    fuente_titulo = obtener_fuente("segoeuib", 66)
-    fuente_sub = obtener_fuente("segoeui", 22)
-    fuente_pill = obtener_fuente("segoeui", 14)
+    fuente_eyebrow = obtener_fuente(["segoeuib", "arialbd"], 12)
+    fuente_titulo = obtener_fuente(["segoeuib", "arialbd"], 54)
+    fuente_version = obtener_fuente(["segoeuib", "arialbd"], 13)
+    fuente_sub = obtener_fuente(["segoeui", "arial"], 20)
+    fuente_pill = obtener_fuente(["consola", "segoeui", "arial"], 13)
 
-    # Coordenada X común para alineación perfecta a la izquierda
-    x_comun = 360
+    # Margen izquierdo alineado de texto
+    x_texto = 300
 
-    # Título "PassVault"
-    draw.text((x_comun, 108), "PassVault", font=fuente_titulo, fill=(255, 255, 255, 255))
+    # 1. Eyebrow técnico (pequeño, sobrio, tracking espaciado)
+    eyebrow = "OPEN SOURCE  ·  WINDOWS DESKTOP  ·  OFFLINE VAULT"
+    draw.text((x_texto, 106), eyebrow, font=fuente_eyebrow, fill=(96, 165, 250, 230))
 
-    # Badge de versión alineado al título
-    bbox_titulo = draw.textbbox((x_comun, 108), "PassVault", font=fuente_titulo)
-    draw.text((bbox_titulo[2] + 16, 126), "v2.0", font=obtener_fuente("segoeuib", 15),
-              fill=(86, 154, 255, 255))
+    # 2. Título principal "PassVault"
+    draw.text((x_texto, 134), "PassVault", font=fuente_titulo, fill=(255, 255, 255, 255))
 
-    # Subtítulo con alineación exacta
-    draw.text((x_comun, 192), "Secure, Lightweight & Offline Desktop Password Manager",
-              font=fuente_sub, fill=(185, 200, 225, 255))
+    # Badge de versión sutil y formal
+    bbox_tit = draw.textbbox((x_texto, 134), "PassVault", font=fuente_titulo)
+    v_pad_x, v_pad_y = 10, 4
+    v_x = bbox_tit[2] + 16
+    v_y = 148
+    bbox_ver = draw.textbbox((0, 0), "v2.0", font=fuente_version)
+    v_w = (bbox_ver[2] - bbox_ver[0]) + v_pad_x * 2
+    v_h = (bbox_ver[3] - bbox_ver[1]) + v_pad_y * 2
+    draw.rounded_rectangle(
+        [v_x, v_y, v_x + v_w, v_y + v_h],
+        radius=4,
+        fill=(30, 41, 59, 255),
+        outline=(51, 65, 85, 255),
+        width=1
+    )
+    draw.text((v_x + v_pad_x, v_y + v_pad_y), "v2.0", font=fuente_version, fill=(56, 189, 248, 255))
 
-    # Pills / Badges destacados (altura fija idéntica de 32px y radio completo)
-    pills = [
-        ("AES-256-GCM", (35, 65, 120)),
-        ("Argon2id KDF", (25, 80, 100)),
-        ("100% Offline", (30, 95, 55)),
-        ("Zero Cloud", (75, 42, 105)),
-        ("Windows", (40, 52, 75)),
+    # 3. Subtítulo conciso y claro
+    subtitulo = "Lightweight local credential manager built with Python and Tkinter."
+    draw.text((x_texto, 212), subtitulo, font=fuente_sub, fill=(148, 163, 184, 255))
+
+    # 4. Ficha de especificaciones técnicas (badges unificados en paleta slate oscura)
+    # Sin colores de chicle: diseño uniforme, técnico y profesional
+    specs = [
+        "AES-256-GCM",
+        "Argon2id KDF",
+        "100% Offline",
+        "Zero Cloud",
+        "No Telemetry",
     ]
 
-    x_pill = x_comun
-    y_pill = 244
-    alto_pill = 32
+    x_spec = x_texto
+    y_spec = 262
+    alto_spec = 30
 
-    for texto, color_bg in pills:
-        bbox = draw.textbbox((0, 0), texto, font=fuente_pill)
-        w_txt = bbox[2] - bbox[0]
-        pad_x = 16
-        ancho_pill = w_txt + pad_x * 2
+    for item in specs:
+        bbox = draw.textbbox((0, 0), item, font=fuente_pill)
+        w_item = bbox[2] - bbox[0]
+        pad_h = 14
+        ancho_spec = w_item + pad_h * 2
 
-        pill_rect = [x_pill, y_pill, x_pill + ancho_pill, y_pill + alto_pill]
-        # Borde y relleno con esquinas redondeadas
-        draw.rounded_rectangle(pill_rect, radius=alto_pill // 2, fill=color_bg,
-                               outline=(255, 255, 255, 50), width=1)
+        # Rectángulo con esquinas ligeramente redondeadas (estilo tag de desarrollo, no píldora de caramelo)
+        rect = [x_spec, y_spec, x_spec + ancho_spec, y_spec + alto_spec]
+        draw.rounded_rectangle(
+            rect,
+            radius=6,
+            fill=(19, 26, 42, 255),
+            outline=(45, 59, 85, 255),
+            width=1,
+        )
 
-        # Centrado geométrico absoluto (middle-middle)
-        cx = x_pill + ancho_pill / 2
-        cy = y_pill + alto_pill / 2
-        draw.text((cx, cy), texto, font=fuente_pill, fill=(240, 245, 255, 245),
-                  anchor="mm")
+        cx = x_spec + ancho_spec / 2
+        cy = y_spec + alto_spec / 2
+        draw.text((cx, cy), item, font=fuente_pill, fill=(203, 213, 225, 255), anchor="mm")
 
-        x_pill += ancho_pill + 10
+        x_spec += ancho_spec + 10
 
-    # Línea decorativa inferior
+    # Acento sutil en la parte superior: línea delgada degradada
     for x in range(ancho):
-        alfa = int(255 * (1 - abs(x - ancho / 2) / (ancho / 2)))
-        draw.point((x, alto - 2), fill=(56, 125, 245, alfa))
-        draw.point((x, alto - 1), fill=(30, 80, 200, alfa // 2))
+        dist = abs(x - ancho / 2) / (ancho / 2)
+        alfa_linea = int(180 * (1 - dist ** 2))
+        draw.point((x, 0), fill=(59, 130, 246, alfa_linea))
 
     destino = Path(__file__).resolve().parent.parent / "assets" / "banner.png"
-    base.save(destino, "PNG")
+    base.save(destino, "PNG", optimize=True)
     print(f"Banner generado exitosamente en {destino}")
 
 
