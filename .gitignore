@@ -42,3 +42,13 @@ dist/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Agentes y asistentes de desarrollo local
+.agents/
+.claude/
+.codex/
+.continue/
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+skills-lock.json

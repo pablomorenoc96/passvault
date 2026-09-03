@@ -103,6 +103,7 @@ Automated tests run on Windows and Ubuntu on every commit via GitHub Actions.
 
 - Technical Architecture & Threat Model: [ARCHITECTURE.md](ARCHITECTURE.md)
 - Release History & Versioning: [CHANGELOG.md](CHANGELOG.md)
+- Contributing Guidelines: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 

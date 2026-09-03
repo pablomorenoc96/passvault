@@ -103,6 +103,7 @@ Las pruebas se ejecutan automáticamente en Windows y Ubuntu en cada commit medi
 
 - Arquitectura Técnica y Modelo de Amenazas: [ARCHITECTURE.md](ARCHITECTURE.md)
 - Historial de Versiones: [CHANGELOG.md](CHANGELOG.md)
+- Guía para Contribuidores: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
