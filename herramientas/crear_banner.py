@@ -87,22 +87,34 @@ def generar_banner():
     # 2. Título principal "PassVault"
     draw.text((x_texto, 134), "PassVault", font=fuente_titulo, fill=(255, 255, 255, 255))
 
-    # Badge de versión sutil y formal
+    # Badge de versión centrado matemáticamente con la altura visual del título
     bbox_tit = draw.textbbox((x_texto, 134), "PassVault", font=fuente_titulo)
-    v_pad_x, v_pad_y = 10, 4
-    v_x = bbox_tit[2] + 16
-    v_y = 148
+    tit_top = bbox_tit[1]
+    tit_bottom = bbox_tit[3]
+    tit_center_y = (tit_top + tit_bottom) / 2
+
+    alto_badge = 22
+    pad_badge_x = 10
     bbox_ver = draw.textbbox((0, 0), "v2.0", font=fuente_version)
-    v_w = (bbox_ver[2] - bbox_ver[0]) + v_pad_x * 2
-    v_h = (bbox_ver[3] - bbox_ver[1]) + v_pad_y * 2
+    ancho_badge = (bbox_ver[2] - bbox_ver[0]) + pad_badge_x * 2
+
+    b_x = bbox_tit[2] + 14
+    b_y = int(tit_center_y - alto_badge / 2)
+
     draw.rounded_rectangle(
-        [v_x, v_y, v_x + v_w, v_y + v_h],
-        radius=4,
-        fill=(30, 41, 59, 255),
-        outline=(51, 65, 85, 255),
-        width=1
+        [b_x, b_y, b_x + ancho_badge, b_y + alto_badge],
+        radius=alto_badge // 2,
+        fill=(22, 34, 55, 255),
+        outline=(56, 114, 195, 180),
+        width=1,
     )
-    draw.text((v_x + v_pad_x, v_y + v_pad_y), "v2.0", font=fuente_version, fill=(56, 189, 248, 255))
+    draw.text(
+        (b_x + ancho_badge / 2, b_y + alto_badge / 2),
+        "v2.0",
+        font=fuente_version,
+        fill=(96, 195, 255, 255),
+        anchor="mm",
+    )
 
     # 3. Subtítulo conciso y claro
     subtitulo = "Lightweight local credential manager built with Python and Tkinter."
