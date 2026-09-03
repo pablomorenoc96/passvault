@@ -115,3 +115,52 @@ def test_verificar_maestra_timing_safe(tmp_path: Path):
     assert b.verificar_maestra("ClaveCorrecta999") is True
     assert b.verificar_maestra("ClaveIncorrecta") is False
     assert b.verificar_maestra("") is False
+
+
+def test_auto_recovery_from_backup(tmp_path: Path):
+    """Verifica que si vault.dat se corrompe por falla de energía, se recupera desde vault.dat.bak."""
+    archivo = tmp_path / "vault_rec.dat"
+    boveda = Boveda.crear(archivo, "ClaveRecuperacion123!")
+
+    # Agregar dos entradas para que se guarde y genere el archivo .bak
+    boveda.agregar(Entrada(sitio="Banco", usuario="admin", contrasena="Secret1"))
+    boveda.agregar(Entrada(sitio="Correo", usuario="user@mail.com", contrasena="Secret2"))
+    boveda.guardar()  # Fuerza la rotación para que .bak contenga ambas entradas
+
+    respaldo = tmp_path / "vault_rec.dat.bak"
+    assert respaldo.exists(), "El archivo de respaldo .bak debe existir tras guardar"
+
+    # Simular corrupción catastrófica de vault.dat (sobrescribir con basura)
+    archivo.write_bytes(b"CORRUPTED_GARBAGE_PAYLOAD_1234567890")
+
+    # Intentar abrir la bóveda: el sistema debe rescatar automáticamente desde .bak
+    boveda_rescatada = Boveda.abrir(archivo, "ClaveRecuperacion123!")
+    assert len(boveda_rescatada.entradas) == 2
+    assert boveda_rescatada.entradas[0].sitio == "Banco"
+    assert boveda_rescatada.entradas[1].sitio == "Correo"
+
+    # Verificar que el archivo principal quedó restaurado íntegro en disco
+    boveda_verificada = Boveda.abrir(archivo, "ClaveRecuperacion123!")
+    assert len(boveda_verificada.entradas) == 2
+
+
+def test_unicode_nfc_nfd_normalization(tmp_path: Path):
+    """Verifica que contraseñas en forma compuesta (NFC) y descompuesta (NFD) sean equivalentes."""
+    import unicodedata
+
+    # 'café' compuesto (NFC: un solo caracter 'é')
+    clave_nfc = unicodedata.normalize("NFC", "café_seguro_2026")
+    # 'café' descompuesto (NFD: 'e' + acento agudo combinatorio)
+    clave_nfd = unicodedata.normalize("NFD", "café_seguro_2026")
+
+    assert clave_nfc.encode("utf-8") != clave_nfd.encode("utf-8")  # Son bytes distintos en crudo
+
+    archivo = tmp_path / "vault_nfc.dat"
+    boveda = Boveda.crear(archivo, clave_nfc)
+    boveda.agregar(Entrada(sitio="PruebaNFC", usuario="usuario", contrasena="test1234"))
+
+    # Debe abrir perfectamente usando la versión descompuesta NFD
+    boveda_nfd = Boveda.abrir(archivo, clave_nfd)
+    assert boveda_nfd.entradas[0].sitio == "PruebaNFC"
+    assert boveda_nfd.verificar_maestra(clave_nfd) is True
+    assert boveda_nfd.verificar_maestra(clave_nfc) is True

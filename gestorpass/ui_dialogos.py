@@ -74,7 +74,7 @@ class DialogoAuditoria(DialogoBase):
     """Análisis de seguridad de todas las contraseñas guardadas."""
 
     def __init__(self, padre, colores: dict, boveda, al_editar=None):
-        super().__init__(padre, colores, "Análisis de seguridad", 820, 625,
+        super().__init__(padre, colores, i18n.t("audit_title"), 820, 625,
                          redimensionable=True)
         self.boveda = boveda
         self.al_editar = al_editar
@@ -85,7 +85,7 @@ class DialogoAuditoria(DialogoBase):
         c = self.colores
         raiz = self.contenedor
 
-        ttk.Label(raiz, text="Análisis de seguridad", style="Titulo.TLabel").pack(anchor="w")
+        ttk.Label(raiz, text=i18n.t("audit_title"), style="Titulo.TLabel").pack(anchor="w")
         self.lbl_resumen = ttk.Label(raiz, text="", style="Tenue.TLabel")
         self.lbl_resumen.pack(anchor="w", pady=(4, 12))
 
@@ -95,19 +95,19 @@ class DialogoAuditoria(DialogoBase):
         # El pie se reserva su espacio antes que la tabla, que es la que crece.
         acciones = ttk.Frame(raiz)
         acciones.pack(side="bottom", fill="x", pady=(14, 0))
-        ttk.Label(acciones, text="Doble clic en una fila para corregirla.",
+        ttk.Label(acciones, text=i18n.t("audit_hint_edit"),
                   style="Tenue.TLabel").pack(side="left")
-        ttk.Button(acciones, text="Cerrar", command=self.cancelar).pack(side="right")
+        ttk.Button(acciones, text=i18n.t("close"), command=self.cancelar).pack(side="right")
 
         marco = ttk.Frame(raiz, style="Panel.TFrame")
         marco.pack(fill="both", expand=True)
 
         columnas = ("problema", "sitio", "usuario", "detalle")
         self.tree = ttk.Treeview(marco, columns=columnas, show="headings", selectmode="browse")
-        for col, titulo, ancho, estira in (("problema", "Problema", 145, False),
-                                           ("sitio", "Sitio", 150, False),
-                                           ("usuario", "Usuario", 175, False),
-                                           ("detalle", "Detalle", 250, True)):
+        for col, titulo, ancho, estira in (("problema", i18n.t("audit_col_issue"), 145, False),
+                                           ("sitio", i18n.t("audit_col_site"), 150, False),
+                                           ("usuario", i18n.t("audit_col_user"), 175, False),
+                                           ("detalle", i18n.t("audit_col_detail"), 250, True)):
             self.tree.heading(col, text=titulo, anchor="w")
             self.tree.column(col, width=px(ancho), minwidth=px(90), anchor="w",
                              stretch=estira)
@@ -140,21 +140,22 @@ class DialogoAuditoria(DialogoBase):
         for entrada in entradas:
             if not entrada.contrasena:
                 vacias += 1
-                filas.append(("Sin contraseña", entrada, "La entrada no guarda contraseña",
-                              "medio"))
+                filas.append((i18n.t("audit_issue_empty"), entrada,
+                              i18n.t("audit_detail_empty"), "medio"))
                 continue
             info = fortaleza.evaluar(entrada.contrasena)
             if info["puntaje"] <= UMBRAL_DEBIL:
                 debiles += 1
                 motivo = info["avisos"][0] if info["avisos"] else f"{info['entropia']:.0f} bits"
-                filas.append((f"Contraseña {info['etiqueta'].lower()}", entrada, motivo,
+                filas.append((i18n.t("audit_issue_weak", nivel=info['etiqueta'].lower()),
+                              entrada, motivo,
                               "critico" if info["puntaje"] == 0 else "medio"))
 
         for grupo in repetidas.values():
             sitios = ", ".join(sorted({e.sitio for e in grupo}))
             for entrada in grupo:
-                filas.append(("Contraseña repetida", entrada,
-                              f"Se repite en: {sitios}", "critico"))
+                filas.append((i18n.t("audit_issue_reused"), entrada,
+                              i18n.t("audit_detail_reused", sitios=sitios), "critico"))
 
         total = len(entradas)
         seguras = total - len({e.id for _, e, _, _ in filas})
@@ -162,12 +163,12 @@ class DialogoAuditoria(DialogoBase):
 
         for hijo in self.tarjetas.winfo_children():
             hijo.destroy()
-        self._tarjeta("Cuentas guardadas", str(total), c["texto"])
-        self._tarjeta("Débiles", str(debiles), c["peligro"] if debiles else c["exito"])
-        self._tarjeta("Reutilizadas", str(len(ids_repetidos)),
+        self._tarjeta(i18n.t("audit_card_total"), str(total), c["texto"])
+        self._tarjeta(i18n.t("audit_card_weak"), str(debiles), c["peligro"] if debiles else c["exito"])
+        self._tarjeta(i18n.t("audit_card_reused"), str(len(ids_repetidos)),
                       c["peligro"] if ids_repetidos else c["exito"])
-        self._tarjeta("Sin contraseña", str(vacias), c["aviso"] if vacias else c["exito"])
-        self._tarjeta("Salud general", f"{porcentaje:.0f}%",
+        self._tarjeta(i18n.t("audit_card_empty"), str(vacias), c["aviso"] if vacias else c["exito"])
+        self._tarjeta(i18n.t("audit_card_health"), f"{porcentaje:.0f}%",
                       c["exito"] if porcentaje >= 80 else c["aviso"])
 
         for hijo in self.tree.get_children():

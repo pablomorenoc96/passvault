@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Automated CI/CD Workflows:** Configured GitHub Actions matrix testing across Windows and Linux on Python 3.10 through 3.13, and automated binary compilation on tag release.
 - **Pixel-Perfect Banner & Visuals:** Uniform 32px pill badges, regular typography, and exact coordinate alignment for project branding.
 - **Word-Based Mnemonic Generator:** Added support for generating memorable yet cryptographically secure passwords from a base word or phrase with probabilistic leet mutations, case variation, and CSPRNG suffix tokens.
+- **Automated Backup Recovery:** Implemented automatic disaster recovery from `.bak` backup files if primary vault suffers power loss or unexpected file corruption.
+- **Universal Unicode NFC Canonical Normalization:** Enforced NFC normalization on master passwords across Argon2id and scrypt KDFs to ensure cross-platform accent and emoji compatibility.
+- **Audit Dialog Localization:** Complete bilingual localization for Security Audit dialog with real-time translation for tables, badges, and health metrics.
+- **Pytest Fixture Architecture:** Added `tests/conftest.py` with reusable test fixtures and coverage, expanding test suite to 34 automated unit tests.
 
 ### Changed
 - Refactored project name and binary artifact to **PassVault**.

@@ -11,6 +11,7 @@ import base64
 import json
 import os
 import secrets
+import unicodedata
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -62,9 +63,14 @@ def _b64d(texto: str) -> bytes:
     return base64.b64decode(texto.encode("ascii"))
 
 
+def _normalizar_secreto(texto: str) -> bytes:
+    """Normaliza canónicamente a NFC para garantizar interoperabilidad entre teclados y OS."""
+    return unicodedata.normalize("NFC", texto).encode("utf-8")
+
+
 def _derivar_llave(contrasena: str, sal: bytes, kdf: dict) -> bytes:
     algoritmo = kdf.get("algo", "argon2id")
-    secreto = contrasena.encode("utf-8")
+    secreto = _normalizar_secreto(contrasena)
 
     if algoritmo == "argon2id":
         if not HAY_ARGON2:

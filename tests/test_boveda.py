@@ -110,3 +110,12 @@ def test_importar_texto(tmp_path):
     assert agregadas == 2
     assert omitidas == 0
     assert len(boveda.entradas) == 2
+
+
+def test_boveda_con_fixtures(boveda_con_datos: Boveda):
+    """Prueba el uso de fixtures compartidos de conftest.py (python-testing-patterns)."""
+    assert len(boveda_con_datos.entradas) == 3
+    sitios = [e.sitio for e in boveda_con_datos.entradas]
+    assert "GitHub" in sitios
+    assert "ProtonMail" in sitios
+    assert "Servidor Local" in sitios

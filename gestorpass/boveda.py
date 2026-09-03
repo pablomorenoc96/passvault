@@ -4,6 +4,7 @@ from __future__ import annotations
 import csv
 import os
 import secrets
+import unicodedata
 import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
@@ -92,12 +93,24 @@ class Boveda:
     @classmethod
     def abrir(cls, ruta: Path, contrasena: str) -> "Boveda":
         ruta = Path(ruta)
+        respaldo = Path(str(ruta) + ".bak")
+
         try:
             contenido = ruta.read_bytes()
-        except OSError as exc:
-            raise ErrorBoveda(f"No se pudo leer la bóveda: {exc}") from exc
-        datos, kdf = crypto.descifrar(contenido, contrasena)
-        return cls(ruta, contrasena, datos, kdf)
+            datos, kdf = crypto.descifrar(contenido, contrasena)
+            return cls(ruta, contrasena, datos, kdf)
+        except (crypto.BovedaCorrupta, OSError) as exc_principal:
+            # Si el archivo principal se dañó (por ej. corte de energía), intentar rescatar desde .bak
+            if respaldo.exists():
+                try:
+                    contenido_bak = respaldo.read_bytes()
+                    datos, kdf = crypto.descifrar(contenido_bak, contrasena)
+                    boveda_recuperada = cls(ruta, contrasena, datos, kdf)
+                    boveda_recuperada.guardar()  # Restaura el archivo principal automáticamente
+                    return boveda_recuperada
+                except Exception:
+                    pass  # Si el respaldo tampoco abre, reportar el fallo del principal
+            raise ErrorBoveda(f"No se pudo leer la bóveda: {exc_principal}") from exc_principal
 
     def guardar(self) -> None:
         datos = {
@@ -124,7 +137,9 @@ class Boveda:
     def verificar_maestra(self, contrasena: str) -> bool:
         if self._contrasena is None:
             return False
-        return secrets.compare_digest(contrasena.encode("utf-8"), self._contrasena.encode("utf-8"))
+        c1 = unicodedata.normalize("NFC", contrasena).encode("utf-8")
+        c2 = unicodedata.normalize("NFC", self._contrasena).encode("utf-8")
+        return secrets.compare_digest(c1, c2)
 
     # ---------------------------------------------------------------------- CRUD
     def obtener(self, id_entrada: str) -> Entrada | None:
